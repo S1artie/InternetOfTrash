@@ -174,9 +174,9 @@ def convertBeaconToEvent(beacon):
         
 def resolveLocationStatus(beacons, beaconsPresent):
     if all(elem in beaconsPresent for elem in beacons):
-        return "hinter dem Haus"
+        return "Hinter dem Haus"
     else:
-        return "vor dem Haus"
+        return "An der Straße"
         
 def resolveAlertStatus(beacons, beaconsPresent, eventsByDate, today, tomorrow):
     if all(elem in beaconsPresent for elem in beacons):
@@ -201,7 +201,7 @@ def writeOutput(eventsByDate, beaconsPresent, today, tomorrow, tempOutside, temp
         writeTrashcanOutput(EVENT_RECYCLING, [BEACON_RECYCLING1, BEACON_RECYCLING2], eventsByDate, beaconsPresent, today, tomorrow, doc)
         doc.stag('temperatures', ('outside', tempOutside), ('cooler', tempCooler))
         
-    outFile = open("trashcans.xml", "w")
+    outFile = open("out/trashcans.xml", "w")
     outFile.write('<?xml version="1.0" encoding="UTF-8"?>\n')
     outFile.write('<?xml-stylesheet type="text/xsl" href="transform.xsl" ?>\n')
     outFile.write(indent(doc.getvalue()))
