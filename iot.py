@@ -6,6 +6,7 @@ import requests
 from icalendar import Calendar, Event
 from datetime import datetime, timedelta
 from yattag import Doc, indent
+import re
 
 import bluetooth._bluetooth as bluez
 
@@ -23,7 +24,9 @@ EVENT_BIO = "Biotonne"
 EVENT_PAPIER = "Papiertonne"
 EVENT_POLLING_INTERVAL = 86400
 
-MIN_UPDATE_INTERVAL = 60
+MIN_FILE_UPDATE_INTERVAL = 60
+
+TEMP_UPDATE_INTERVAL = 60
 
 def mainLoop():
     global lastEventPolling
@@ -42,7 +45,10 @@ def mainLoop():
     eventsByDate = {}
     lastEventPolling = 0
     lastToday = ""
-    lastUpdate = 0
+    lastFileUpdate = 0
+    lastTempUpdate = 0
+    tempOutside = "-"
+    tempCooler = "-"
 
     while True:
         timestamp = time.time()
@@ -60,6 +66,16 @@ def mainLoop():
             print("Todays' date has changed to " + today)
             lastToday = today
             anythingChanged = True
+            
+        if (timestamp - lastTempUpdate) >= TEMP_UPDATE_INTERVAL:
+            newTempOutside = requestTemperatureSensor(2)
+            newTempCooler = requestTemperatureSensor(1)
+            if tempOutside != newTempOutside or tempCooler != newTempCooler:
+                tempOutside = newTempOutside
+                tempCooler = newTempCooler
+                print("Temperatures changed to outside: " + tempOutside + ", cooler: " + tempCooler)
+                anythingChanged = True
+            lastTempUpdate = timestamp
         
         beaconList = blescan.parse_events(sock, 10)
         for beacon in beaconList:
@@ -76,9 +92,9 @@ def mainLoop():
                 del beaconsPresent[beaconAddress]
                 anythingChanged = True
         
-        if anythingChanged or (timestamp - lastUpdate) >= MIN_UPDATE_INTERVAL:
-            writeOutput(eventsByDate, beaconsPresent, today, tomorrow)
-            lastUpdate = timestamp
+        if anythingChanged or (timestamp - lastFileUpdate) >= MIN_FILE_UPDATE_INTERVAL:
+            writeOutput(eventsByDate, beaconsPresent, today, tomorrow, tempOutside, tempCooler)
+            lastFileUpdate = timestamp
         
 
         
@@ -132,7 +148,9 @@ def requestAndParseCalendar():
     print("Requesting new trash collection calendar...")
     # First, query the trash collection service for an iCal file
     iCalResponse = requestCalendar()
-    iCalResponse.raise_for_status()
+    if iCalResponse.status_code != 200:
+        print("Got error status code from trash collection calendar server: " + iCalResponse.status)
+        return
     # Parse the file into trash collection events
     collectionEvents = parseCalendar(iCalResponse.content)
     if len(collectionEvents) == 0:
@@ -174,10 +192,11 @@ def writeTrashcanOutput(event, beacon, eventsByDate, beaconsPresent, today, tomo
             ('location', resolveLocationStatus(beacon, beaconsPresent)), \
             ('alert', resolveAlertStatus(beacon, beaconsPresent, eventsByDate, today, tomorrow)));
         
-def writeOutput(eventsByDate, beaconsPresent, today, tomorrow):
+def writeOutput(eventsByDate, beaconsPresent, today, tomorrow, tempOutside, tempCooler):
     doc = Doc()
-    with doc.tag('trashcans', ('timestamp', datetime.now().strftime('%d.%m.%Y %H:%M:%S'))):
+    with doc.tag('iot', ('timestamp', datetime.now().strftime('%d.%m.%Y %H:%M:%S'))):
         writeTrashcanOutput(EVENT_RESTMUELL, BEACON_RESTMUELL, eventsByDate, beaconsPresent, today, tomorrow, doc)
+        doc.stag('temperatures', ('outside', tempOutside), ('cooler', tempCooler))
         
     outFile = open("trashcans.xml", "w")
     outFile.write('<?xml version="1.0" encoding="UTF-8"?>\n')
@@ -185,6 +204,31 @@ def writeOutput(eventsByDate, beaconsPresent, today, tomorrow):
     outFile.write(indent(doc.getvalue()))
     outFile.close()
 	
+	
+def requestTemperatureSensor(sensorNumber):
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:69.0) Gecko/20100101 Firefox/69.0',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'de,en-US;q=0.7,en;q=0.3',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'DNT': '1',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1',
+        'TE': 'Trailers',
+    }
+    data = "<methodCall><methodName>getValue</methodName><params><param><value><string>NEQ0531830:" \
+             + str(sensorNumber) + "</string></value></param><param><value><string>TEMPERATURE</string></value></param></params></methodCall>"
+    response = requests.post('http://homematic-raspi:2001/', headers=headers, data=data)
+    if response.status_code != 200:
+        print("Got error status code from Homematic CCU: " + response.status)
+        return "-"
+    else:
+        parsed = re.search(r'<double>(-?\d+\.\d)\d*</double>', response.content, re.IGNORECASE)
+        if parsed:
+            return parsed.group(1)
+        else:
+            print("Got incomprehensible response from Homematic CCU: " + response.content)
+            return "-"
 
 # Open the bluetooth reading and enter a reading loop
 mainLoop()
