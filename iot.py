@@ -11,10 +11,10 @@ import re
 import bluetooth._bluetooth as bluez
 
 BEACON_RESTMUELL = "fd:37:91:59:11:fa"
-BEACON_BIO = "fd:37:91:59:11:fb"
-BEACON_PAPIER = "fd:37:91:59:11:fe"
-BEACON_RECYCLING1 = "fd:37:91:59:11:fc"
-BEACON_RECYCLING2 = "fd:37:91:59:11:fd"
+BEACON_BIO = "e2:c2:c6:a4:d1:6f"
+BEACON_PAPIER = "c3:24:a0:eb:ea:cd"
+BEACON_RECYCLING1 = "cc:ca:10:35:6b:f4"
+BEACON_RECYCLING2 = "e6:a3:14:18:7d:bf"
 BEACONS_ALL = [BEACON_RESTMUELL, BEACON_BIO, BEACON_PAPIER, BEACON_RECYCLING1, BEACON_RECYCLING2]
 BEACON_TIMEOUT = 30
 
@@ -196,6 +196,9 @@ def writeOutput(eventsByDate, beaconsPresent, today, tomorrow, tempOutside, temp
     doc = Doc()
     with doc.tag('iot', ('timestamp', datetime.now().strftime('%d.%m.%Y %H:%M:%S'))):
         writeTrashcanOutput(EVENT_RESTMUELL, BEACON_RESTMUELL, eventsByDate, beaconsPresent, today, tomorrow, doc)
+        writeTrashcanOutput(EVENT_BIO, BEACON_RESTMUELL, eventsByDate, beaconsPresent, today, tomorrow, doc)
+        writeTrashcanOutput(EVENT_PAPIER, BEACON_RESTMUELL, eventsByDate, beaconsPresent, today, tomorrow, doc)
+        writeTrashcanOutput(EVENT_RECYCLING, BEACON_RECYCLING1, eventsByDate, beaconsPresent, today, tomorrow, doc)
         doc.stag('temperatures', ('outside', tempOutside), ('cooler', tempCooler))
         
     outFile = open("trashcans.xml", "w")
