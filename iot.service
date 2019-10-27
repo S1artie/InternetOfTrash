@@ -1,0 +1,12 @@
+[Unit]
+Description=Internet of Trash
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python2.7 -u iot.py
+WorkingDirectory=/home/pi/InternetOfTrash/
+Restart=on-failure
+RestartSec=300s
+
+[Install]
+WantedBy=multi-user.target
