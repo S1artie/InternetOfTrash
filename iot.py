@@ -226,8 +226,8 @@ def writeOutput(eventsByDate, beaconsPresent, today, tempOutside, tempCooler, te
     doc = Doc()
     with doc.tag('iot', ('timestamp', datetime.now().strftime('%d.%m.%Y %H:%M:%S'))):
         writeTrashcanOutput(EVENT_RESTMUELL, 1, [BEACON_RESTMUELL], eventsByDate, beaconsPresent, today, doc)
-        writeTrashcanOutput(EVENT_BIO, 2, [BEACON_RESTMUELL], eventsByDate, beaconsPresent, today, doc)
-        writeTrashcanOutput(EVENT_PAPIER, 3, [BEACON_RESTMUELL], eventsByDate, beaconsPresent, today, doc)
+        writeTrashcanOutput(EVENT_BIO, 2, [BEACON_BIO], eventsByDate, beaconsPresent, today, doc)
+        writeTrashcanOutput(EVENT_PAPIER, 3, [BEACON_PAPIER], eventsByDate, beaconsPresent, today, doc)
         writeTrashcanOutput(EVENT_RECYCLING, 4, [BEACON_RECYCLING1, BEACON_RECYCLING2], eventsByDate, beaconsPresent, today, doc)
         doc.stag('temperatures', ('outside', tempOutside), ('cooler', tempCooler), ('forecastLow', tempForecastLow), ('forecastHigh', tempForecastHigh), ('forecastTarget', tempForecastTarget))
         
