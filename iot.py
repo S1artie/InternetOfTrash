@@ -17,7 +17,7 @@ BEACON_PAPIER = "c3:24:a0:eb:ea:cd"
 BEACON_RECYCLING1 = "cc:ca:10:35:6b:f4"
 BEACON_RECYCLING2 = "e6:a3:14:18:7d:bf"
 BEACONS_ALL = [BEACON_RESTMUELL, BEACON_BIO, BEACON_PAPIER, BEACON_RECYCLING1, BEACON_RECYCLING2]
-BEACON_TIMEOUT = 30
+BEACON_TIMEOUT = 90
 
 EVENT_RESTMUELL = "Restmülltonne"
 EVENT_RECYCLING = "Wertstofftonne"
@@ -28,7 +28,7 @@ EVENT_POLLING_INTERVAL = 86400
 MIN_FILE_UPDATE_INTERVAL = 60
 
 TEMP_UPDATE_INTERVAL = 300
-FORECAST_UPDATE_INTERVAL = 3600
+FORECAST_UPDATE_INTERVAL = 1800
 
 def mainLoop():
     global lastEventPolling
@@ -200,9 +200,9 @@ def convertBeaconToEvent(beacon):
         
 def resolveLocationStatus(beacons, beaconsPresent):
     if all(elem in beaconsPresent for elem in beacons):
-        return "Hinter dem Haus"
+        return "hinter dem Haus"
     else:
-        return "An der Straße"
+        return "an der Straße"
         
 def resolveAlertStatus(beacons, beaconsPresent, eventsByDate, today):
     todayString = today.strftime("%Y-%m-%d")
@@ -281,11 +281,11 @@ def requestTemperatureForecast():
         return None
     else:
         # Dynamically determine the hourly window during which to look at the temperatures
-        # If past 18:00, look at tomorrows' window of 08:00 - 20:00. If before 18:00, look at todays'
+        # If past 17:00, look at tomorrows' window of 08:00 - 20:00. If before 17:00, look at todays'
         # of 08:00 - 20:00, but cut off the beginning if we are past 08:00.
         # This assumes the report being by the hour, starting at the current hour.
         hourOfDay = datetime.now().hour
-        if hourOfDay < 18:
+        if hourOfDay < 17:
             forecastTarget = "heute"
             windowStart = max(8 - hourOfDay, 0)
             windowEnd = max((8 - hourOfDay) + 13, 1)

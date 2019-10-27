@@ -113,13 +113,13 @@
             <div class="paramValue">
                 <xsl:attribute name="class"><xsl:value-of select="concat('paramValue ', @alert)" /></xsl:attribute>
 				<xsl:if test="@nextPickupDays > 2">
-					<xsl:value-of select="concat('Wird in ', @nextPickupDays, ' Tagen abgeholt')" />
+					<xsl:value-of select="concat('wird in ', @nextPickupDays, ' Tagen abgeholt')" />
 				</xsl:if>
                 <xsl:if test="@nextPickupDays = 1">
-					<xsl:value-of select="concat('Wird morgen abgeholt')" />
+					<xsl:value-of select="concat('wird morgen abgeholt')" />
 				</xsl:if>
 				<xsl:if test="@nextPickupDays = 0">
-					<xsl:value-of select="concat('Wird heute abgeholt')" />
+					<xsl:value-of select="concat('wird heute abgeholt')" />
 				</xsl:if>
             </div>            
         </div>
