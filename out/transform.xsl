@@ -11,14 +11,14 @@
       	body { font-family: Calibri, Arial, sans-serif; font-size: 16pt; color: #fff; margin: 0px; display: block; border-collapse: collapse; width: 100%; height: 100%; }
       	#outer { margin: 0px; display: block; width: 980px; height: 575px; position: absolute; background-color: #000; }
       	#timestamp { position: absolute; right: 4px; top: 4px; font-size: 14px; }
-      	.header { padding-bottom: 10px; }
+      	.header { padding-bottom: 16px; }
       	.title { font-weight: bold; font-size: 26px; height: 30px; border-bottom: 1px solid #fff; margin: 10px; }
       	.content { margin-left: 20px; margin-right: 20px; }
-      	.temperatures { height: 90px; }
-      	.temperature { display: block; float: left; width: calc(50% - 80px); padding-left: 10px; padding-right: 70px; margin-bottom: 10px; }
+      	.temperatures { height: 100px; }
+      	.temperature { display: block; float: left; width: calc(50% - 50px); padding-left: 10px; padding-right: 40px; margin-bottom: 10px; }
       	.temperatures:last-child { float: none !important; }
-      	.temperature .label { width: 70%; float: left; }
-      	.temperature .value { width: calc(22% - 6px); float: left; text-align: right; padding-right: 6px; }
+      	.temperature .label { width: 74%; float: left; }
+      	.temperature .value { width: calc(18% - 6px); float: left; text-align: right; padding-right: 6px; }
       	.temperature .unit { width: 8%; float: right; }
       	.temperature .monospace { font-family: "DejaVu Sans Mono", Menlo, Consolas, "Liberation Mono", Monaco, "Lucida Console", monospace  }
       	.trashcan { height: 50px; margin-bottom: 20px; padding: 5px; border: 1px dashed #555; }
