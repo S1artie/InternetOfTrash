@@ -7,6 +7,7 @@ from icalendar import Calendar, Event
 from datetime import datetime, timedelta
 from yattag import Doc, indent
 import re
+from xml.dom import minidom
 
 import bluetooth._bluetooth as bluez
 
@@ -27,6 +28,7 @@ EVENT_POLLING_INTERVAL = 86400
 MIN_FILE_UPDATE_INTERVAL = 60
 
 TEMP_UPDATE_INTERVAL = 60
+FORECAST_UPDATE_INTERVAL = 3600
 
 def mainLoop():
     global lastEventPolling
@@ -44,11 +46,14 @@ def mainLoop():
     beaconsPresent = {}
     eventsByDate = {}
     lastEventPolling = 0
-    lastToday = ""
+    lastTodayString = ""
     lastFileUpdate = 0
     lastTempUpdate = 0
+    lastForecastUpdate = 0
     tempOutside = "-"
     tempCooler = "-"
+    tempForecastLow = "-"
+    tempForecastHigh = "-"
 
     while True:
         timestamp = time.time()
@@ -60,11 +65,12 @@ def mainLoop():
             lastEventPolling = timestamp
             anythingChanged = True
             
-        today = datetime.now().strftime("%Y-%m-%d")
-        if lastToday != today:
+        today = datetime.now()
+        todayString = today.strftime("%Y-%m-%d")
+        if lastTodayString != todayString:
             tomorrow = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
-            print("Todays' date has changed to " + today)
-            lastToday = today
+            print("Todays' date has changed to " + todayString)
+            lastTodayString = todayString
             anythingChanged = True
             
         if (timestamp - lastTempUpdate) >= TEMP_UPDATE_INTERVAL:
@@ -76,6 +82,14 @@ def mainLoop():
                 print("Temperatures changed to outside: " + tempOutside + ", cooler: " + tempCooler)
                 anythingChanged = True
             lastTempUpdate = timestamp
+        
+        if (timestamp - lastForecastUpdate) >= FORECAST_UPDATE_INTERVAL:
+            tempForecast = requestTemperatureForecast()
+            if tempForecast:
+                tempForecastLow = str(tempForecast[0])
+                tempForecastHigh = str(tempForecast[1])
+                anythingChanged = True
+            lastForecastUpdate = timestamp
         
         beaconList = blescan.parse_events(sock, 10)
         for beacon in beaconList:
@@ -93,7 +107,7 @@ def mainLoop():
                 anythingChanged = True
         
         if anythingChanged or (timestamp - lastFileUpdate) >= MIN_FILE_UPDATE_INTERVAL:
-            writeOutput(eventsByDate, beaconsPresent, today, tomorrow, tempOutside, tempCooler)
+            writeOutput(eventsByDate, beaconsPresent, today, tempOutside, tempCooler, tempForecastLow, tempForecastHigh)
             lastFileUpdate = timestamp
         
 
@@ -105,7 +119,6 @@ def requestCalendar():
         'Accept-Language': 'de,en-US;q=0.7,en;q=0.3',
         'Content-Type': 'application/x-www-form-urlencoded',
         'DNT': '1',
-        'Connection': 'keep-alive',
         'Referer': 'https://www.muellmax.de/abfallkalender/rsa/res/RsaStart.php',
         'Upgrade-Insecure-Requests': '1',
         'TE': 'Trailers',
@@ -128,7 +141,7 @@ def parseCalendar(calendar):
     gcal = Calendar.from_ical(calendar)
     for component in gcal.walk():
         if component.name == "VEVENT":
-            date = component.get('dtstart').dt
+            date = component.get('dtstart').dt.strftime("%Y-%m-%d")
             if not date in newEvents:
                 newEvents[date] = []
             summary = component.get('summary')
@@ -149,7 +162,7 @@ def requestAndParseCalendar():
     # First, query the trash collection service for an iCal file
     iCalResponse = requestCalendar()
     if iCalResponse.status_code != 200:
-        print("Got error status code from trash collection calendar server: " + iCalResponse.status)
+        print("Got error status code from trash collection calendar server: " + str(iCalResponse.status_code))
         return
     # Parse the file into trash collection events
     collectionEvents = parseCalendar(iCalResponse.content)
@@ -159,6 +172,13 @@ def requestAndParseCalendar():
     else:
         print("Parsed {} collection dates from calendar".format(len(collectionEvents)))
         return collectionEvents
+        
+def findNextPickupDays(event, today, eventsByDate):
+    for days in range(0,32):
+        dateString = (today + timedelta(days=days)).strftime("%Y-%m-%d")
+        if dateString in eventsByDate and event in eventsByDate[dateString]:
+            return days
+    return "?"
         
 def convertBeaconToEvent(beacon):
     if beacon == BEACON_RESTMUELL:
@@ -178,28 +198,32 @@ def resolveLocationStatus(beacons, beaconsPresent):
     else:
         return "An der Straße"
         
-def resolveAlertStatus(beacons, beaconsPresent, eventsByDate, today, tomorrow):
+def resolveAlertStatus(beacons, beaconsPresent, eventsByDate, today):
+    todayString = today.strftime("%Y-%m-%d")
+    tomorrowString = (today + timedelta(days=1)).strftime("%Y-%m-%d")
     if all(elem in beaconsPresent for elem in beacons):
         eventForBeacon = convertBeaconToEvent(beacons[0])
-        if today in eventsByDate and eventForBeacon in eventsByDate[today]:
-            return "Abholung HEUTE"
-        elif tomorrow in eventsByDate and eventForBeacon in eventsByDate[tomorrow]:
-            return "Abholung morgen"
+        if todayString in eventsByDate and eventForBeacon in eventsByDate[todayString]:
+            return "pickupToday"
+        elif tomorrowString in eventsByDate and eventForBeacon in eventsByDate[tomorrowString]:
+            return "pickupTomorrow"
     return ""
         
-def writeTrashcanOutput(event, beacons, eventsByDate, beaconsPresent, today, tomorrow, doc):
+def writeTrashcanOutput(event, eventType, beacons, eventsByDate, beaconsPresent, today, doc):
     doc.stag('trashcan', ('name', event), \
+            ('type', eventType), \
             ('location', resolveLocationStatus(beacons, beaconsPresent)), \
-            ('alert', resolveAlertStatus(beacons, beaconsPresent, eventsByDate, today, tomorrow)));
+            ('alert', resolveAlertStatus(beacons, beaconsPresent, eventsByDate, today)), \
+            ('nextPickupDays', findNextPickupDays(event, today, eventsByDate)));
         
-def writeOutput(eventsByDate, beaconsPresent, today, tomorrow, tempOutside, tempCooler):
+def writeOutput(eventsByDate, beaconsPresent, today, tempOutside, tempCooler, tempForecastLow, tempForecastHigh):
     doc = Doc()
     with doc.tag('iot', ('timestamp', datetime.now().strftime('%d.%m.%Y %H:%M:%S'))):
-        writeTrashcanOutput(EVENT_RESTMUELL, [BEACON_RESTMUELL], eventsByDate, beaconsPresent, today, tomorrow, doc)
-        writeTrashcanOutput(EVENT_BIO, [BEACON_RESTMUELL], eventsByDate, beaconsPresent, today, tomorrow, doc)
-        writeTrashcanOutput(EVENT_PAPIER, [BEACON_RESTMUELL], eventsByDate, beaconsPresent, today, tomorrow, doc)
-        writeTrashcanOutput(EVENT_RECYCLING, [BEACON_RECYCLING1, BEACON_RECYCLING2], eventsByDate, beaconsPresent, today, tomorrow, doc)
-        doc.stag('temperatures', ('outside', tempOutside), ('cooler', tempCooler))
+        writeTrashcanOutput(EVENT_RESTMUELL, 1, [BEACON_RESTMUELL], eventsByDate, beaconsPresent, today, doc)
+        writeTrashcanOutput(EVENT_BIO, 2, [BEACON_RESTMUELL], eventsByDate, beaconsPresent, today, doc)
+        writeTrashcanOutput(EVENT_PAPIER, 3, [BEACON_RESTMUELL], eventsByDate, beaconsPresent, today, doc)
+        writeTrashcanOutput(EVENT_RECYCLING, 4, [BEACON_RECYCLING1, BEACON_RECYCLING2], eventsByDate, beaconsPresent, today, doc)
+        doc.stag('temperatures', ('outside', tempOutside), ('cooler', tempCooler), ('forecastLow', tempForecastLow), ('forecastHigh', tempForecastHigh))
         
     outFile = open("out/trashcans.xml", "w")
     outFile.write('<?xml version="1.0" encoding="UTF-8"?>\n')
@@ -214,16 +238,12 @@ def requestTemperatureSensor(sensorNumber):
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'Accept-Language': 'de,en-US;q=0.7,en;q=0.3',
         'Content-Type': 'application/x-www-form-urlencoded',
-        'DNT': '1',
-        'Connection': 'keep-alive',
-        'Upgrade-Insecure-Requests': '1',
-        'TE': 'Trailers',
     }
     data = "<methodCall><methodName>getValue</methodName><params><param><value><string>NEQ0531830:" \
              + str(sensorNumber) + "</string></value></param><param><value><string>TEMPERATURE</string></value></param></params></methodCall>"
     response = requests.post('http://homematic-raspi:2001/', headers=headers, data=data)
     if response.status_code != 200:
-        print("Got error status code from Homematic CCU: " + response.status)
+        print("Got error status code from Homematic CCU: " + str(response.status_code))
         return "-"
     else:
         parsed = re.search(r'<double>(-?\d+\.\d)\d*</double>', response.content, re.IGNORECASE)
@@ -232,6 +252,39 @@ def requestTemperatureSensor(sensorNumber):
         else:
             print("Got incomprehensible response from Homematic CCU: " + response.content)
             return "-"
+            
+            
+def requestTemperatureForecast():
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:69.0) Gecko/20100101 Firefox/69.0',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'de,en-US;q=0.7,en;q=0.3',
+        'Content-Type': 'application/x-www-form-urlencoded',
+    }
+    response = requests.get('https://www.yr.no/sted/Tyskland/Nordrhein-Westfalen/Troisdorf/forecast_hour_by_hour.xml')
+    if response.status_code != 200:
+        print("Got error status code from weather service: " + str(response.status_code))
+        return None
+    else:
+        xmldoc = minidom.parseString(response.content)
+        hours = xmldoc.getElementsByTagName('time')
+        lowestTemperature = 100
+        highestTemperature = -100
+        for i in range (8,21):
+            temperature = hours[i].getElementsByTagName('temperature')[0].attributes['value'].value
+            try:
+                temperature = int(temperature)
+            except ValueError:
+                temperature = -100
+            if temperature > highestTemperature:
+                highestTemperature = temperature;
+            if temperature < lowestTemperature:
+                lowestTemperature = temperature;
+        if highestTemperature == -100:
+            return None
+        return [lowestTemperature, highestTemperature]
+            
+        
 
 # Open the bluetooth reading and enter a reading loop
 mainLoop()
