@@ -27,7 +27,7 @@ EVENT_POLLING_INTERVAL = 86400
 
 MIN_FILE_UPDATE_INTERVAL = 60
 
-TEMP_UPDATE_INTERVAL = 60
+TEMP_UPDATE_INTERVAL = 300
 FORECAST_UPDATE_INTERVAL = 3600
 
 def mainLoop():
@@ -54,6 +54,7 @@ def mainLoop():
     tempCooler = "-"
     tempForecastLow = "-"
     tempForecastHigh = "-"
+    tempForecastTarget = "heute"
 
     while True:
         timestamp = time.time()
@@ -88,6 +89,7 @@ def mainLoop():
             if tempForecast:
                 tempForecastLow = str(tempForecast[0])
                 tempForecastHigh = str(tempForecast[1])
+                tempForecastTarget = tempForecast[2]
                 anythingChanged = True
             lastForecastUpdate = timestamp
         
@@ -107,7 +109,7 @@ def mainLoop():
                 anythingChanged = True
         
         if anythingChanged or (timestamp - lastFileUpdate) >= MIN_FILE_UPDATE_INTERVAL:
-            writeOutput(eventsByDate, beaconsPresent, today, tempOutside, tempCooler, tempForecastLow, tempForecastHigh)
+            writeOutput(eventsByDate, beaconsPresent, today, tempOutside, tempCooler, tempForecastLow, tempForecastHigh, tempForecastTarget)
             lastFileUpdate = timestamp
         
 
@@ -160,7 +162,11 @@ def parseCalendar(calendar):
 def requestAndParseCalendar():
     print("Requesting new trash collection calendar...")
     # First, query the trash collection service for an iCal file
-    iCalResponse = requestCalendar()
+    try:
+        iCalResponse = requestCalendar()
+    except:
+        print("Got exception when requesting trash collection calendar")
+        return;
     if iCalResponse.status_code != 200:
         print("Got error status code from trash collection calendar server: " + str(iCalResponse.status_code))
         return
@@ -216,14 +222,14 @@ def writeTrashcanOutput(event, eventType, beacons, eventsByDate, beaconsPresent,
             ('alert', resolveAlertStatus(beacons, beaconsPresent, eventsByDate, today)), \
             ('nextPickupDays', findNextPickupDays(event, today, eventsByDate)));
         
-def writeOutput(eventsByDate, beaconsPresent, today, tempOutside, tempCooler, tempForecastLow, tempForecastHigh):
+def writeOutput(eventsByDate, beaconsPresent, today, tempOutside, tempCooler, tempForecastLow, tempForecastHigh, tempForecastTarget):
     doc = Doc()
     with doc.tag('iot', ('timestamp', datetime.now().strftime('%d.%m.%Y %H:%M:%S'))):
         writeTrashcanOutput(EVENT_RESTMUELL, 1, [BEACON_RESTMUELL], eventsByDate, beaconsPresent, today, doc)
         writeTrashcanOutput(EVENT_BIO, 2, [BEACON_RESTMUELL], eventsByDate, beaconsPresent, today, doc)
         writeTrashcanOutput(EVENT_PAPIER, 3, [BEACON_RESTMUELL], eventsByDate, beaconsPresent, today, doc)
         writeTrashcanOutput(EVENT_RECYCLING, 4, [BEACON_RECYCLING1, BEACON_RECYCLING2], eventsByDate, beaconsPresent, today, doc)
-        doc.stag('temperatures', ('outside', tempOutside), ('cooler', tempCooler), ('forecastLow', tempForecastLow), ('forecastHigh', tempForecastHigh))
+        doc.stag('temperatures', ('outside', tempOutside), ('cooler', tempCooler), ('forecastLow', tempForecastLow), ('forecastHigh', tempForecastHigh), ('forecastTarget', tempForecastTarget))
         
     outFile = open("out/trashcans.xml", "w")
     outFile.write('<?xml version="1.0" encoding="UTF-8"?>\n')
@@ -241,7 +247,11 @@ def requestTemperatureSensor(sensorNumber):
     }
     data = "<methodCall><methodName>getValue</methodName><params><param><value><string>NEQ0531830:" \
              + str(sensorNumber) + "</string></value></param><param><value><string>TEMPERATURE</string></value></param></params></methodCall>"
-    response = requests.post('http://homematic-raspi:2001/', headers=headers, data=data)
+    try:
+        response = requests.post('http://homematic-raspi:2001/', headers=headers, data=data)
+    except:
+        print("Got exception while querying Homematic CCU")
+        return "-"
     if response.status_code != 200:
         print("Got error status code from Homematic CCU: " + str(response.status_code))
         return "-"
@@ -261,16 +271,34 @@ def requestTemperatureForecast():
         'Accept-Language': 'de,en-US;q=0.7,en;q=0.3',
         'Content-Type': 'application/x-www-form-urlencoded',
     }
-    response = requests.get('https://www.yr.no/sted/Tyskland/Nordrhein-Westfalen/Troisdorf/forecast_hour_by_hour.xml')
+    try:
+        response = requests.get('https://www.yr.no/sted/Tyskland/Nordrhein-Westfalen/Troisdorf/forecast_hour_by_hour.xml')
+    except:
+        print("Got exception when querying weather forecast")
+        return None
     if response.status_code != 200:
         print("Got error status code from weather service: " + str(response.status_code))
         return None
     else:
+        # Dynamically determine the hourly window during which to look at the temperatures
+        # If past 18:00, look at tomorrows' window of 08:00 - 20:00. If before 18:00, look at todays'
+        # of 08:00 - 20:00, but cut off the beginning if we are past 08:00.
+        # This assumes the report being by the hour, starting at the current hour.
+        hourOfDay = datetime.now().hour
+        if hourOfDay < 18:
+            forecastTarget = "heute"
+            windowStart = max(8 - hourOfDay, 0)
+            windowEnd = max((8 - hourOfDay) + 13, 1)
+        else:
+            forecastTarget = "morgen"
+            windowStart = (24 - hourOfDay) + 8
+            windowEnd = windowStart + 13
+            
         xmldoc = minidom.parseString(response.content)
         hours = xmldoc.getElementsByTagName('time')
         lowestTemperature = 100
         highestTemperature = -100
-        for i in range (8,21):
+        for i in range (windowStart, windowEnd):
             temperature = hours[i].getElementsByTagName('temperature')[0].attributes['value'].value
             try:
                 temperature = int(temperature)
@@ -282,7 +310,7 @@ def requestTemperatureForecast():
                 lowestTemperature = temperature;
         if highestTemperature == -100:
             return None
-        return [lowestTemperature, highestTemperature]
+        return [lowestTemperature, highestTemperature, forecastTarget]
             
         
 

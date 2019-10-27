@@ -81,7 +81,7 @@
         <div class="unit monospace">°C</div>
     </div>
     <div class="temperature">
-        <div class="label">Tagestiefsttemperatur</div>
+        <div class="label"><xsl:value-of select="concat('Tagestiefsttemperatur ', @forecastTarget)" /></div>
         <div class="value monospace"><xsl:value-of select="@forecastLow" /></div>
         <div class="unit monospace">°C</div>
     </div>
@@ -91,7 +91,7 @@
         <div class="unit monospace">°C</div>
     </div>
     <div class="temperature">
-        <div class="label">Tageshöchsttemperatur</div>
+        <div class="label"><xsl:value-of select="concat('Tageshöchsttemperatur ', @forecastTarget)" /></div>
         <div class="value monospace"><xsl:value-of select="@forecastHigh" /></div>
         <div class="unit monospace">°C</div>
     </div>
