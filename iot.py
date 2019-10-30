@@ -207,12 +207,17 @@ def resolveLocationStatus(beacons, beaconsPresent):
 def resolveAlertStatus(beacons, beaconsPresent, eventsByDate, today):
     todayString = today.strftime("%Y-%m-%d")
     tomorrowString = (today + timedelta(days=1)).strftime("%Y-%m-%d")
+    hourOfDay = datetime.now().hour
     if all(elem in beaconsPresent for elem in beacons):
         eventForBeacon = convertBeaconToEvent(beacons[0])
-        if todayString in eventsByDate and eventForBeacon in eventsByDate[todayString]:
+        if todayString in eventsByDate and eventForBeacon in eventsByDate[todayString] and hourOfDay <= 10:
             return "pickupToday"
         elif tomorrowString in eventsByDate and eventForBeacon in eventsByDate[tomorrowString]:
-            return "pickupTomorrow"
+            hourOfDay = datetime.now().hour
+            if hourOfDay >= 18:
+                return "pickupTomorrowAlert"
+            else:
+                return "pickupTomorrow"
     return ""
         
 def writeTrashcanOutput(event, eventType, beacons, eventsByDate, beaconsPresent, today, doc):

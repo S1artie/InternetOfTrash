@@ -34,7 +34,8 @@
       	.trashcan .location { width: 240px; }
       	.trashcan .pickupToday { font-weight: bold; color: #DB0000; animation: 2s steps(1, end) infinite alert;  }
       	.trashcan .pickupTomorrow { font-weight: bold; color: #DB0000; animation: 4s infinite softAlert;  }
-      	@keyframes alert {
+      	.trashcan .pickupTomorrowAlert { font-weight: bold; color: #DB0000; animation: 2s steps(1, end) infinite alert; }
+        @keyframes alert {
       	    0% { color: #CC0000; }
       	    50% { color: #FFFFFF; }
       	    100% { color: #CC0000; }
@@ -112,15 +113,18 @@
             <div class="paramName">Status</div>
             <div class="paramValue">
                 <xsl:attribute name="class"><xsl:value-of select="concat('paramValue ', @alert)" /></xsl:attribute>
-				<xsl:if test="@nextPickupDays > 2">
+				<xsl:if test="@nextPickupDays >= 2">
 					<xsl:value-of select="concat('wird in ', @nextPickupDays, ' Tagen abgeholt')" />
 				</xsl:if>
                 <xsl:if test="@nextPickupDays = 1">
-					<xsl:value-of select="concat('wird morgen abgeholt')" />
+					wird morgen abgeholt
 				</xsl:if>
-				<xsl:if test="@nextPickupDays = 0">
-					<xsl:value-of select="concat('wird heute abgeholt')" />
+				<xsl:if test="@nextPickupDays = 0 and @alert != ''">
+					wird heute abgeholt
 				</xsl:if>
+                <xsl:if test="@nextPickupDays = 0 and @alert = ''">
+                    wurde heute abgeholt
+                </xsl:if>
             </div>            
         </div>
     </div>
