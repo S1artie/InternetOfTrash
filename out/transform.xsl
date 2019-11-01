@@ -46,7 +46,7 @@
       	    50% { color: #FF0000; }
       	    100% { color: #CC0000; }
       	}
-        #clockarea { position: absolute; top: 0px; right: 4px; color: #FFFF00; font-family: digital-7regular; letter-spacing: 7px; font-weight: bold; font-size: 36pt; }
+        #clockarea { position: absolute; top: 4px; right: 4px; color: #FFFF00; font-family: digital-7regular; letter-spacing: 7px; font-weight: bold; font-size: 36pt; }
         #clock { position: absolute; right: 0px; top: 0px; z-index: 2; }
         #clockbackground { position: absolute; right: 0px; top: 0px; z-index: 1; color: #222; }
         @font-face {
