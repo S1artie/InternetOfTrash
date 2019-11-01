@@ -6,15 +6,16 @@
       <title>
         <xsl:text>Internet Of Trash</xsl:text>
       </title>
+      <link href='https://fonts.googleapis.com/css?family=Orbitron' rel='stylesheet' type='text/css'></link>
       <style type="text/css">
         html { width: 100%; height: 100%; }
       	body { font-family: Calibri, Arial, sans-serif; font-size: 16pt; color: #fff; margin: 0px; display: block; border-collapse: collapse; width: 100%; height: 100%; }
-      	#outer { margin: 0px; display: block; width: 980px; height: 575px; position: absolute; background-color: #000; }
-      	#timestamp { position: absolute; right: 4px; top: 4px; font-size: 14px; }
+      	#outer { margin: 0px; padding-top: 15px; display: block; width: 980px; height: 560px; position: absolute; background-color: #000; }
+      	#timestamp { position: absolute; right: 4px; bottom: 4px; font-size: 14px; }
       	.header { padding-bottom: 16px; }
       	.title { font-weight: bold; font-size: 26px; height: 30px; border-bottom: 1px solid #fff; margin: 10px; }
       	.content { margin-left: 20px; margin-right: 20px; }
-      	.temperatures { height: 100px; }
+      	.temperatures { height: 90px; }
       	.temperature { display: block; float: left; width: calc(50% - 50px); padding-left: 10px; padding-right: 40px; margin-bottom: 10px; }
       	.temperatures:last-child { float: none !important; }
       	.temperature .label { width: 74%; float: left; }
@@ -45,14 +46,49 @@
       	    50% { color: #FF0000; }
       	    100% { color: #CC0000; }
       	}
+        #clockarea { position: absolute; top: 0px; right: 4px; color: #FFFF00; font-family: digital-7regular; letter-spacing: 7px; font-weight: bold; font-size: 36pt; }
+        #clock { position: absolute; right: 0px; top: 0px; z-index: 2; }
+        #clockbackground { position: absolute; right: 0px; top: 0px; z-index: 1; color: #222; }
+        @font-face {
+            font-family: 'digital-7regular';
+            font-weight: normal;
+            font-style: normal;
+            src: url(data:application/font-woff2;charset=utf-8;base64,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) format('woff2'); 
+        }
       </style>
+      <script>
+<![CDATA[
+    function startTime(){
+        var today = new Date();
+        var h = today.getHours();
+        var m = today.getMinutes();
+        var s = today.getSeconds();
+        var ms = today.getMilliseconds();
+        var dots = (ms < 500 ? ":" : "<span style=\"visibility: hidden;\">:</span>");
+        var time = fill(h) + dots + fill(m) + dots + fill(s);
+        document.getElementById('clock').innerHTML = time;
+        var t = setTimeout(startTime, 500);   
+    }
+    function fill(i) {
+        if (i < 10) {
+            return "0" + i;
+        }
+        return i;
+    }
+    
+]]>
+    </script>
     </head>
-    <body>
+    <body onload="startTime()">
       <div id="outer">
           <div id="timestamp">
           		<xsl:text>aktualisiert: </xsl:text>
           		<xsl:value-of select="@timestamp" />
-          	</div>
+          </div>
+          <div id="clockarea">
+              <div id="clock"></div>
+              <div id="clockbackground">88:88:88</div>
+          </div>
           <div class="header">
           	<div class="title">
                 <xsl:text>Temperaturen</xsl:text>
