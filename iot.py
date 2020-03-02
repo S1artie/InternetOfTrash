@@ -12,7 +12,7 @@ from xml.dom import minidom
 import bluetooth._bluetooth as bluez
 
 BEACON_RESTMUELL = "fd:37:91:59:11:fa"
-BEACON_BIO = "e2:c2:c6:a4:d1:6f"
+BEACON_BIO = "ee:0b:87:8d:c0:80"
 BEACON_PAPIER = "c3:24:a0:eb:ea:cd"
 BEACON_RECYCLING1 = "cc:ca:10:35:6b:f4"
 BEACON_RECYCLING2 = "e6:a3:14:18:7d:bf"
