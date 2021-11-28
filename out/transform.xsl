@@ -114,7 +114,7 @@
     }
 
     function printLabel(count) {
-        var url = "http://trashbeacon-pi/cgi-bin/labelprinter.py?firstLine=" + encodeURIComponent(document.querySelector('#printline1 input').value) + "&secondLine=" + encodeURIComponent(document.querySelector('#printline2 input').value) + "&copies=" + count;
+        var url = "/cgi-bin/labelprinter.py?firstLine=" + encodeURIComponent(document.querySelector('#printline1 input').value) + "&secondLine=" + encodeURIComponent(document.querySelector('#printline2 input').value) + "&copies=" + count;
         const http = new XMLHttpRequest();
         http.open("GET", url);
         http.send();
