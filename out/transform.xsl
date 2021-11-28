@@ -151,9 +151,8 @@
 
     function disableInterferingLight() {
         const http = new XMLHttpRequest();
-        http.open("POST", "http://homematic-raspi:2001/");
-        http.setRequestHeader('Content-Type', 'text/plain');
-        http.send("<methodCall><methodName>setValue</methodName><params><param><value><string>NEQ0399036:1</string></value></param><param><value><string>STATE</string></value></param><param><value><string>0</string></value></param></params></methodCall>");
+        http.open("GET", "/cgi-bin/labelprinter/disableInterferingLight.py");
+        http.send();
     }
 
     window.setInterval(function () {
