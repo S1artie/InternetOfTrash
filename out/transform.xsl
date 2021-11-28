@@ -113,6 +113,7 @@
                 "Rouladen",
                 "Reis",
                 "Kekse",
+                "Wrap-Sauce",
             ]
             document.getElementById('printtemplates1').innerHTML = templateData.sort().map(item => `<button onclick="setLabelLine1('${item}')">${item}</button>`).join('');
             
