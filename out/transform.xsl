@@ -121,6 +121,12 @@
 
         toggleLabelPrinter();
     }
+
+    window.setInterval(function () {
+        if(document.getElementById('labelprinter').style.display != "block") {
+            window.location.reload();
+        }
+    }, 120000);
 ]]>
     </script>
     </head>
