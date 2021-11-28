@@ -114,6 +114,7 @@
                 "Reis",
                 "Kekse",
                 "Wrap-Sauce",
+                "Marinade",
             ]
             document.getElementById('printtemplates1').innerHTML = templateData.sort().map(item => `<button onclick="setLabelLine1('${item}')">${item}</button>`).join('');
             
@@ -126,6 +127,7 @@
                 new Date(timestamp - dayOffset * 4).toLocaleDateString('de-DE', dateFormat),
                 new Date(timestamp - dayOffset * 5).toLocaleDateString('de-DE', dateFormat),
                 new Date(timestamp - dayOffset * 6).toLocaleDateString('de-DE', dateFormat),
+                "",
             ]
             document.getElementById('printtemplates2').innerHTML = templateData.map(item => `<button onclick="setLabelLine2('${item}')">${item}</button>`).join('');
 
