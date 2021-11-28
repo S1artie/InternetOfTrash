@@ -113,3 +113,7 @@ try:
     process.kill()
 except PermissionError:
     pass
+
+print("Content-Type: text/plain")
+print()
+print("success!")
