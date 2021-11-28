@@ -10,11 +10,11 @@ copies = int(sys.argv[3]) if len(sys.argv) > 3 else 1
 
 cgiArgs = cgi.parse()
 if 'firstLine' in cgiArgs:
-    firstLine = cgiArgs['firstLine']
+    firstLine = cgiArgs['firstLine'][0]
 if 'secondLine' in cgiArgs:
-    secondLine = cgiArgs['secondLine']
+    secondLine = cgiArgs['secondLine'][0]
 if 'copies' in cgiArgs:
-    copies = int(cgiArgs['copies'])
+    copies = int(cgiArgs['copies'][0])
 
 safetyPre = 120
 safetyPost = 2
