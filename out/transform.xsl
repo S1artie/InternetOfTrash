@@ -64,8 +64,8 @@
         #printbuttons { display: flex; flex-direction: row; height: 40px; justify-content: center; }
         #printbuttons button { width: 40px; height: 40px; margin-left: 5px; margin-right: 5px; border: 2px solid white; border-radius: 15px 5px; background-color: black; color: white; }
         #printbuttonx1 { width: 200px !important }
-        #printtemplates { display: flex; flex-wrap: wrap; padding-left: 10px; padding-right: 10px; padding-top: 30px; }
-        #printtemplates button { margin: 3px; font-size: 15px; padding: 8px; border: 1px solid white; border-radius: 10px 3px; background-color: black; color: white; opacity: 0.6; }
+        .printtemplates { display: flex; flex-wrap: wrap; padding-left: 10px; padding-right: 10px; padding-top: 20px; }
+        .printtemplates button { margin: 3px; font-size: 15px; padding: 8px; border: 1px solid white; border-radius: 10px 3px; background-color: black; color: white; opacity: 0.6; }
       </style>
       <script>
 <![CDATA[
@@ -92,8 +92,9 @@
         if (div.style.display == "block") {
             div.style.display = "none";
         } else {
+            var dateFormat = {day: 'numeric', year: 'numeric', month: 'short'};
             document.querySelector('#printline1 input').value = "";
-            document.querySelector('#printline2 input').value = new Date().toLocaleDateString('de-DE', {day: 'numeric', year: 'numeric', month: 'short'});
+            document.querySelector('#printline2 input').value = new Date().toLocaleDateString('de-DE', dateFormat);
             
             var templateData = [
                 "Tomatensauce",
@@ -102,15 +103,40 @@
                 "Pizzasauce",
                 "Gulasch",
                 "Chili con carne",
+                "Thai-Curry",
+                "Käsespätzle",
+                "Spätzlepfanne",
+                "Hähnchenbrust",
+                "Erbsensuppe",
+                "Linseneintopf",
+                "Pesto",
+                "Rouladen",
+                "Reis",
             ]
-            document.getElementById('printtemplates').innerHTML = templateData.sort().map(item => `<button onclick="setLabelLine1('${item}')">${item}</button>`).join('');
+            document.getElementById('printtemplates1').innerHTML = templateData.sort().map(item => `<button onclick="setLabelLine1('${item}')">${item}</button>`).join('');
             
+            var timestamp = new Date().getTime();
+            var dayOffset = 24*60*60*1000;
+            templateData = [
+                new Date(timestamp - dayOffset * 1).toLocaleDateString('de-DE', dateFormat),
+                new Date(timestamp - dayOffset * 2).toLocaleDateString('de-DE', dateFormat),
+                new Date(timestamp - dayOffset * 3).toLocaleDateString('de-DE', dateFormat),
+                new Date(timestamp - dayOffset * 4).toLocaleDateString('de-DE', dateFormat),
+                new Date(timestamp - dayOffset * 5).toLocaleDateString('de-DE', dateFormat),
+                new Date(timestamp - dayOffset * 6).toLocaleDateString('de-DE', dateFormat),
+            ]
+            document.getElementById('printtemplates2').innerHTML = templateData.map(item => `<button onclick="setLabelLine2('${item}')">${item}</button>`).join('');
+
             div.style.display = "block";
+            disableInterferingLight();
         }
     }
 
     function setLabelLine1(text) {
         document.querySelector('#printline1 input').value = text;
+    }
+    function setLabelLine2(text) {
+        document.querySelector('#printline2 input').value = text;
     }
 
     function printLabel(count) {
@@ -122,6 +148,13 @@
         toggleLabelPrinter();
     }
 
+    function disableInterferingLight() {
+        const http = new XMLHttpRequest();
+        http.open("POST", "http://homematic-raspi:2001/");
+        http.setRequestHeader('Content-Type', 'text/plain');
+        http.send("<methodCall><methodName>setValue</methodName><params><param><value><string>NEQ0399036:1</string></value></param><param><value><string>STATE</string></value></param><param><value><string>0</string></value></param></params></methodCall>");
+    }
+
     window.setInterval(function () {
         if(document.getElementById('labelprinter').style.display != "block") {
             window.location.reload();
@@ -130,7 +163,7 @@
 ]]>
     </script>
     </head>
-    <body onload="startTime()">
+    <body onload="startTime()" onclick="disableInterferingLight()">
       <div id="outer">
           <div id="timestamp">
           		<xsl:text>aktualisiert: </xsl:text>
@@ -154,7 +187,9 @@
                 <button id="printbuttonx4" onclick="printLabel(4)">x4</button>
                 <button id="printbuttonx5" onclick="printLabel(5)">x5</button>
             </div>
-            <div id="printtemplates">
+            <div id="printtemplates1" class="printtemplates">
+            </div> 
+            <div id="printtemplates2" class="printtemplates">
             </div>            
           </div>
           <div class="header">
