@@ -55,6 +55,17 @@
             font-style: normal;
             src: url(data:application/font-woff2;charset=utf-8;base64,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) format('woff2'); 
         }
+        #labelbutton { width: 36px; height: 36px; position: absolute; top: 12px; right: 280px; z-index: 20; background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAEtmlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4KPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iWE1QIENvcmUgNS41LjAiPgogPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4KICA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIgogICAgeG1sbnM6ZXhpZj0iaHR0cDovL25zLmFkb2JlLmNvbS9leGlmLzEuMC8iCiAgICB4bWxuczp0aWZmPSJodHRwOi8vbnMuYWRvYmUuY29tL3RpZmYvMS4wLyIKICAgIHhtbG5zOnBob3Rvc2hvcD0iaHR0cDovL25zLmFkb2JlLmNvbS9waG90b3Nob3AvMS4wLyIKICAgIHhtbG5zOnhtcD0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLyIKICAgIHhtbG5zOnhtcE1NPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvbW0vIgogICAgeG1sbnM6c3RFdnQ9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZUV2ZW50IyIKICAgZXhpZjpQaXhlbFhEaW1lbnNpb249IjM2IgogICBleGlmOlBpeGVsWURpbWVuc2lvbj0iMzYiCiAgIGV4aWY6Q29sb3JTcGFjZT0iNjU1MzUiCiAgIHRpZmY6SW1hZ2VXaWR0aD0iMzYiCiAgIHRpZmY6SW1hZ2VMZW5ndGg9IjM2IgogICB0aWZmOlJlc29sdXRpb25Vbml0PSIyIgogICB0aWZmOlhSZXNvbHV0aW9uPSI5Ni8xIgogICB0aWZmOllSZXNvbHV0aW9uPSI5Ni8xIgogICBwaG90b3Nob3A6Q29sb3JNb2RlPSIzIgogICBwaG90b3Nob3A6SUNDUHJvZmlsZT0iR2VuZXJpYyBSR0IgUHJvZmlsZSIKICAgeG1wOk1vZGlmeURhdGU9IjIw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"); }
+        #labelprinter { position: absolute; top: 60px; left: 100px; z-index: 10; width: 780px; height: 400px; background: rgba(0,0,0,0.9); border: 2px solid #fff; border-radius: 20px 10px; box-shadow: 0px 0px 0px 200px rgba(0,0,0,0.7);  }
+        #printlines { padding-top: 10px; }
+        .printline { display: grid; grid-template-columns: 100px auto; padding-left: 10px; padding-right: 10px; padding-bottom: 10px; }
+        .printline div { grid-column: 1; align-self: center; }
+        .printline input { grid-column: 2; font-size: 20px; text-align: center; }
+        #printbuttons { display: flex; flex-direction: row; height: 40px; justify-content: center; }
+        #printbuttons button { width: 40px; height: 40px; margin-left: 5px; margin-right: 5px; border: 2px solid white; border-radius: 15px 5px; background-color: black; color: white; }
+        #printbuttonx1 { width: 200px !important }
+        #printtemplates { display: flex; flex-wrap: wrap; padding-left: 10px; padding-right: 10px; padding-top: 30px; }
+        #printtemplates button { margin: 3px; font-size: 15px; padding: 8px; border: 1px solid white; border-radius: 10px 3px; background-color: black; color: white; opacity: 0.6; }
       </style>
       <script>
 <![CDATA[
@@ -75,7 +86,41 @@
         }
         return i;
     }
-    
+
+    function toggleLabelPrinter() {
+        var div = document.getElementById('labelprinter');
+        if (div.style.display == "block") {
+            div.style.display = "none";
+        } else {
+            document.querySelector('#printline1 input').value = "";
+            document.querySelector('#printline2 input').value = new Date().toLocaleDateString('de-DE', {day: 'numeric', year: 'numeric', month: 'short'});
+            
+            var templateData = [
+                "Tomatensauce",
+                "Tomatensuppe",
+                "Bolognese",
+                "Pizzasauce",
+                "Gulasch",
+                "Chili con carne",
+            ]
+            document.getElementById('printtemplates').innerHTML = templateData.sort().map(item => `<button onclick="setLabelLine1('${item}')">${item}</button>`).join('');
+            
+            div.style.display = "block";
+        }
+    }
+
+    function setLabelLine1(text) {
+        document.querySelector('#printline1 input').value = text;
+    }
+
+    function printLabel(count) {
+        var url = "http://trashbeacon-pi/cgi-bin/labelprinter.py?firstLine=" + encodeURIComponent(document.querySelector('#printline1 input').value) + "&secondLine=" + encodeURIComponent(document.querySelector('#printline2 input').value) + "&copies=" + count;
+        const http = new XMLHttpRequest();
+        http.open("GET", url);
+        http.send();
+
+        toggleLabelPrinter();
+    }
 ]]>
     </script>
     </head>
@@ -88,6 +133,23 @@
           <div id="clockarea">
               <div id="clock"></div>
               <div id="clockbackground">88:88:88</div>
+          </div>
+          <div id="labelbutton" onclick="toggleLabelPrinter()">
+          </div>
+          <div id="labelprinter" style="display: none">
+            <div id="printlines">
+                <div id="printline1" class="printline"><div>Zeile 1</div><input type="text"/></div>
+                <div id="printline2" class="printline"><div>Zeile 2</div><input type="text"/></div>
+            </div>
+            <div id="printbuttons">
+                <button id="printbuttonx1" onclick="printLabel(1)">Label drucken</button>
+                <button id="printbuttonx2" onclick="printLabel(2)">x2</button>
+                <button id="printbuttonx3" onclick="printLabel(3)">x3</button>
+                <button id="printbuttonx4" onclick="printLabel(4)">x4</button>
+                <button id="printbuttonx5" onclick="printLabel(5)">x5</button>
+            </div>
+            <div id="printtemplates">
+            </div>            
           </div>
           <div class="header">
           	<div class="title">
