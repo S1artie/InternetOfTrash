@@ -2,11 +2,12 @@
 Description=Internet of Trash
 
 [Service]
-Type=simple
+Type=notify
 ExecStart=/usr/bin/python2.7 -u iot.py
 WorkingDirectory=/home/pi/InternetOfTrash/
 Restart=on-failure
 RestartSec=300s
+WatchdogSec=30
 
 [Install]
 WantedBy=multi-user.target

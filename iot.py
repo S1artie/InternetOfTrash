@@ -8,8 +8,11 @@ from datetime import datetime, timedelta
 from yattag import Doc, indent
 import re
 from xml.dom import minidom
+import sdnotify
 
 import bluetooth._bluetooth as bluez
+
+n = sdnotify.SystemdNotifier()
 
 BEACON_RESTMUELL = "d4:dd:1f:1f:52:08"
 BEACON_BIO = "ee:0b:87:8d:c0:80"
@@ -35,6 +38,7 @@ def mainLoop():
     dev_id = 0
     try:
         sock = bluez.hci_open_dev(dev_id)
+        n.notify("READY=1")
         print("BLE Reading started")
     except:
         print("Error accessing Bluetooth device")
@@ -111,6 +115,8 @@ def mainLoop():
         if anythingChanged or (timestamp - lastFileUpdate) >= MIN_FILE_UPDATE_INTERVAL:
             writeOutput(eventsByDate, beaconsPresent, today, tempOutside, tempCooler, tempForecastLow, tempForecastHigh, tempForecastTarget)
             lastFileUpdate = timestamp
+
+        n.notify("WATCHDOG=1")
         
 
         
