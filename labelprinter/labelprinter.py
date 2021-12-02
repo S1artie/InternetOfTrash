@@ -20,7 +20,8 @@ safetyPre = 120
 safetyPost = 2
 distance = 8
 
-fontSmall = ImageFont.truetype(font = "Helvetica.ttf", size = 40)
+fontSmall = ImageFont.truetype(font = "Helvetica.ttf", size = 30)
+fontMedium = ImageFont.truetype(font = "Helvetica.ttf", size = 50)
 fontBig = ImageFont.truetype(font = "Helvetica.ttf", size = 60)
 
 image = Image.new('RGB', (10000, 384), color = 'white') # 384 height is only for printer protocol, actual print height is about 100 pixels
@@ -29,10 +30,10 @@ printHeight = 100
 
 d = ImageDraw.Draw(image)
 if firstLine and secondLine:
-    width1, height1 = fontSmall.getsize(firstLine)
+    width1, height1 = fontMedium.getsize(firstLine)
     width2, height2 = fontSmall.getsize(secondLine)
     width = max(width1, width2)
-    d.text((safetyPre + ((width - width1) / 2), (printHeight - (height1 + height2 + distance)) / 2), firstLine, fill = (0,0,0), font = fontSmall)
+    d.text((safetyPre + ((width - width1) / 2), (printHeight - (height1 + height2 + distance)) / 2), firstLine, fill = (0,0,0), font = fontMedium)
     d.text((safetyPre + ((width - width2) / 2), ((printHeight - (height1 + height2 + distance)) / 2) + height1 + distance), secondLine, fill = (0,0,0), font = fontSmall)
     image = image.crop((0, 0, width + safetyPre + safetyPost, image.height))
 else:
