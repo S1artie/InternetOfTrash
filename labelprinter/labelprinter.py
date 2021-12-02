@@ -16,6 +16,9 @@ if 'secondLine' in cgiArgs:
 if 'copies' in cgiArgs:
     copies = int(cgiArgs['copies'][0])
 
+with open('prints.txt', 'a') as logfile:
+    logfile.write(firstLine + "|" + secondLine + "|" + str(copies) + "\n")
+
 safetyPre = 120
 safetyPost = 2
 distance = 8
