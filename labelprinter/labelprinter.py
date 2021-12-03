@@ -56,6 +56,9 @@ process = subprocess.Popen(['sudo', 'bash', 'rfconnect.sh'], text=True, stdout=s
 # Give the process a few secs to make the connection (we don't actually know if it works, the process does not terminate)
 time.sleep(4)
 
+# Make the device file accessible
+process = subprocess.run(['sudo', 'chmod', '666', '/dev/rfcomm1'])
+
 # Open the device file
 device = open("/dev/rfcomm1", "wb")
 
