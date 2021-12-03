@@ -55,6 +55,17 @@ process = subprocess.Popen(['sudo', 'bash', 'rfconnect.sh'], text=True, stdin=su
 
 # Give the process a few secs to make the connection (we don't actually know if it works, the process does not terminate)
 time.sleep(4)
+waitCycles = 0
+while not os.path.exists("/dev/rfcomm1"):
+    time.sleep(1)
+    waitCycles = waitCycles + 1
+    if waitCycles > 10:
+        try:
+            process.send_signal(signal.SIGINT)
+            process.kill()
+        except PermissionError:
+            pass
+        quit(-1)
 
 # Make the device file accessible
 subprocess.run(['sudo', 'chmod', '666', '/dev/rfcomm1'])
