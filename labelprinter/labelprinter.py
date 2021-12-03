@@ -127,7 +127,7 @@ time.sleep(1)
 # Close the connection, kill the rfcomm process
 device.close()
 time.sleep(1)
-subprocess.run('sudo', 'pkill', '-SIGINT', 'rfcomm'])
+subprocess.run(['sudo', 'pkill', '-SIGINT', 'rfcomm'])
 
 print("Content-Type: text/plain")
 print()
