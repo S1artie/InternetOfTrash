@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import getopt, sys, os, subprocess, time, cgi
+import getopt, sys, os, subprocess, time, cgi, signal
 
 from PIL import Image, ImageDraw, ImageFont
 
