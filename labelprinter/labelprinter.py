@@ -51,7 +51,7 @@ image = image.convert(mode='1', dither=Image.NONE)
 #image.save('out.png')
 
 # Connect the bluetooth device
-process = subprocess.Popen(['sudo', 'bash', 'rfconnect.sh'], text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+process = subprocess.Popen(['sudo', 'bash', 'rfconnect.sh'], text=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
 # Give the process a few secs to make the connection (we don't actually know if it works, the process does not terminate)
 time.sleep(4)
@@ -119,6 +119,9 @@ time.sleep(1)
 
 # Close the connection, kill the rfcomm process
 device.close()
+process.send_signal(signal.SIGINT)
+
+time.sleep(1)
 try:
     process.kill()
 except PermissionError:
