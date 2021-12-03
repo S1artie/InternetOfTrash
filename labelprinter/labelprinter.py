@@ -57,7 +57,7 @@ process = subprocess.Popen(['sudo', 'bash', 'rfconnect.sh'], text=True, stdout=s
 time.sleep(4)
 
 # Make the device file accessible
-process = subprocess.run(['sudo', 'chmod', '666', '/dev/rfcomm1'])
+subprocess.run(['sudo', 'chmod', '666', '/dev/rfcomm1'])
 
 # Open the device file
 device = open("/dev/rfcomm1", "wb")
@@ -113,6 +113,9 @@ for copy in range(copies):
             lines -= 1
             line += 1
     print_footer()
+
+device.flush()
+time.sleep(1)
 
 # Close the connection, kill the rfcomm process
 device.close()
