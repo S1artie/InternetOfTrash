@@ -13,3 +13,4 @@ while [[ $result =~ "down" ]]; do
     result=$(rfcomm connect 1 D1:9B:AA:10:D7:5E 2>&1)
     echo $result
 done
+chmod 666 /dev/rfcomm1
