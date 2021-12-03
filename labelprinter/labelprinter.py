@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import getopt, sys, os, subprocess, time, cgi, signal
+import getopt, sys, os, subprocess, time, cgi
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -60,11 +60,7 @@ while not os.path.exists("/dev/rfcomm1"):
     time.sleep(1)
     waitCycles = waitCycles + 1
     if waitCycles > 10:
-        try:
-            process.send_signal(signal.SIGINT)
-            process.kill()
-        except PermissionError:
-            pass
+        subprocess.run(['pkill', '-SIGINT', 'rfcomm'])
         quit(-1)
 
 # Make the device file accessible
@@ -130,13 +126,8 @@ time.sleep(1)
 
 # Close the connection, kill the rfcomm process
 device.close()
-process.send_signal(signal.SIGINT)
-
 time.sleep(1)
-try:
-    process.kill()
-except PermissionError:
-    pass
+subprocess.run(['pkill', '-SIGINT', 'rfcomm'])
 
 print("Content-Type: text/plain")
 print()
