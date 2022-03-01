@@ -304,24 +304,27 @@ def requestTemperatureForecast():
             forecastTarget = "morgen"
             windowStart = (24 - hourOfDay) + 8
             windowEnd = windowStart + 13
-            
-        xmldoc = minidom.parseString(response.content)
-        hours = xmldoc.getElementsByTagName('time')
-        lowestTemperature = 100
-        highestTemperature = -100
-        for i in range (windowStart, windowEnd):
-            temperature = hours[i].getElementsByTagName('temperature')[0].attributes['value'].value
-            try:
-                temperature = int(temperature)
-            except ValueError:
-                temperature = -100
-            if temperature > highestTemperature:
-                highestTemperature = temperature;
-            if temperature < lowestTemperature:
-                lowestTemperature = temperature;
-        if highestTemperature == -100:
+                
+        try:
+            xmldoc = minidom.parseString(response.content)
+            hours = xmldoc.getElementsByTagName('time')
+            lowestTemperature = 100
+            highestTemperature = -100
+            for i in range (windowStart, windowEnd):
+                temperature = hours[i].getElementsByTagName('temperature')[0].attributes['value'].value
+                try:
+                    temperature = int(temperature)
+                except ValueError:
+                    temperature = -100
+                if temperature > highestTemperature:
+                    highestTemperature = temperature;
+                if temperature < lowestTemperature:
+                    lowestTemperature = temperature;
+            if highestTemperature == -100:
+                return None
+            return [lowestTemperature, highestTemperature, forecastTarget]
+        except:
             return None
-        return [lowestTemperature, highestTemperature, forecastTarget]
             
         
 
