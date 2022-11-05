@@ -18,7 +18,7 @@ BEACON_RESTMUELL = "d4:dd:1f:1f:52:08"
 BEACON_BIO = "ee:0b:87:8d:c0:80"
 BEACON_PAPIER = "f5:8f:c7:3a:7b:5a"
 BEACON_RECYCLING1 = "da:32:c3:8f:39:ce"
-BEACON_RECYCLING2 = "e4:da:93:05:19:bb"
+BEACON_RECYCLING2 = "fe:fe:82:66:d5:83"
 BEACONS_ALL = [BEACON_RESTMUELL, BEACON_BIO, BEACON_PAPIER, BEACON_RECYCLING1, BEACON_RECYCLING2]
 BEACON_TIMEOUT = 120
 
@@ -106,6 +106,8 @@ def mainLoop():
                     print("Found new beacon: " + address)
                     anythingChanged = True
                 beaconsPresent[address] = time.time()
+#            else:
+#                print("Found unknown beacon: " + address + ", data: " + data)
         for beaconAddress, beaconTimestamp in beaconsPresent.items():
             if beaconTimestamp < timestamp - BEACON_TIMEOUT:
                 print("Beacon removed: " + beaconAddress)
