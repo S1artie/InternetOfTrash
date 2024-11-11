@@ -26,7 +26,7 @@ EVENT_RESTMUELL = "Restmülltonne"
 EVENT_RECYCLING = "Wertstofftonne"
 EVENT_BIO = "Biotonne"
 EVENT_PAPIER = "Papiertonne"
-EVENT_POLLING_INTERVAL = 3600 * 4
+EVENT_POLLING_INTERVAL = 3600 * 24
 
 MIN_FILE_UPDATE_INTERVAL = 60
 
@@ -66,7 +66,7 @@ def mainLoop():
         if timestamp - EVENT_POLLING_INTERVAL > lastEventPolling:
             newEvents = requestAndParseCalendar()
             if not newEvents is None:
-            	eventsByDate = newEvents
+                eventsByDate = newEvents
             lastEventPolling = timestamp
             anythingChanged = True
             
@@ -148,23 +148,26 @@ def requestCalendar():
 
 def parseCalendar(calendar):
     newEvents = {}
-    gcal = Calendar.from_ical(calendar)
-    for component in gcal.walk():
-        if component.name == "VEVENT":
-            date = component.get('dtstart').dt.strftime("%Y-%m-%d")
-            if not date in newEvents:
-                newEvents[date] = []
-            summary = component.get('summary')
-            if EVENT_RESTMUELL.decode('utf-8') in summary:
-                newEvents[date].append(EVENT_RESTMUELL)
-            elif EVENT_BIO in summary:
-                newEvents[date].append(EVENT_BIO)
-            elif EVENT_PAPIER in summary:
-                newEvents[date].append(EVENT_PAPIER)
-            elif EVENT_RECYCLING in summary:
-                newEvents[date].append(EVENT_RECYCLING)
-            else:
-                print("Unknown calendar event found: " + summary)
+    try:
+        gcal = Calendar.from_ical(calendar)
+        for component in gcal.walk():
+            if component.name == "VEVENT":
+                date = component.get('dtstart').dt.strftime("%Y-%m-%d")
+                if not date in newEvents:
+                    newEvents[date] = []
+                summary = component.get('summary')
+                if EVENT_RESTMUELL.decode('utf-8') in summary:
+                    newEvents[date].append(EVENT_RESTMUELL)
+                elif EVENT_BIO in summary:
+                    newEvents[date].append(EVENT_BIO)
+                elif EVENT_PAPIER in summary:
+                    newEvents[date].append(EVENT_PAPIER)
+                elif EVENT_RECYCLING in summary:
+                    newEvents[date].append(EVENT_RECYCLING)
+                else:
+                    print("Unknown calendar event found: " + summary)
+    except:
+        print("Got exception when parsing trash collection calendar")
     return newEvents
 
 def requestAndParseCalendar():
