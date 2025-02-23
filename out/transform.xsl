@@ -224,21 +224,6 @@
         <div class="value monospace"><xsl:value-of select="@outside" /></div>
         <div class="unit monospace">°C</div>
     </div>
-    <div class="temperature">
-        <div class="label"><xsl:value-of select="concat('Tagestiefsttemperatur ', @forecastTarget)" /></div>
-        <div class="value monospace"><xsl:value-of select="@forecastLow" /></div>
-        <div class="unit monospace">°C</div>
-    </div>
-    <div class="temperature">
-        <div class="label">Getränkekühltruhe aktuell</div>
-        <div class="value monospace"><xsl:value-of select="@cooler" /></div>
-        <div class="unit monospace">°C</div>
-    </div>
-    <div class="temperature">
-        <div class="label"><xsl:value-of select="concat('Tageshöchsttemperatur ', @forecastTarget)" /></div>
-        <div class="value monospace"><xsl:value-of select="@forecastHigh" /></div>
-        <div class="unit monospace">°C</div>
-    </div>
 </xsl:template>
 <xsl:template match="trashcan">
     <div class="trashcan">

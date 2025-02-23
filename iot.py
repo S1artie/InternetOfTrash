@@ -9,6 +9,7 @@ from yattag import Doc, indent
 import re
 from xml.dom import minidom
 import sdnotify
+import os
 
 import bluetooth._bluetooth as bluez
 
@@ -22,16 +23,19 @@ BEACON_RECYCLING2 = "fe:fe:82:66:d5:83"
 BEACONS_ALL = [BEACON_RESTMUELL, BEACON_BIO, BEACON_PAPIER, BEACON_RECYCLING1, BEACON_RECYCLING2]
 BEACON_TIMEOUT = 120
 
-EVENT_RESTMUELL = "Restmülltonne"
-EVENT_RECYCLING = "Wertstofftonne"
-EVENT_BIO = "Biotonne"
-EVENT_PAPIER = "Papiertonne"
+EVENT_RESTMUELL = "Restabfallbehaelter"
+LABEL_RESTMUELL = "Restmülltonne"
+EVENT_RECYCLING = "Gelbe Behaelter"
+LABEL_RECYCLING = "Gelbe Tonne"
+EVENT_BIO = "Bioabfallbehaelter"
+LABEL_BIO = "Biotonne"
+EVENT_PAPIER = "Papierbehaelter"
+LABEL_PAPIER = "Papiertonne"
 EVENT_POLLING_INTERVAL = 3600 * 24
 
 MIN_FILE_UPDATE_INTERVAL = 60
 
 TEMP_UPDATE_INTERVAL = 300
-FORECAST_UPDATE_INTERVAL = 1800
 
 def mainLoop():
     global lastEventPolling
@@ -53,12 +57,7 @@ def mainLoop():
     lastTodayString = ""
     lastFileUpdate = 0
     lastTempUpdate = 0
-    lastForecastUpdate = 0
     tempOutside = "-"
-    tempCooler = "-"
-    tempForecastLow = "-"
-    tempForecastHigh = "-"
-    tempForecastTarget = "heute"
 
     while True:
         timestamp = time.time()
@@ -77,26 +76,14 @@ def mainLoop():
             print("Todays' date has changed to " + todayString)
             lastTodayString = todayString
             anythingChanged = True
-            
+        
         if (timestamp - lastTempUpdate) >= TEMP_UPDATE_INTERVAL:
-            newTempOutside = requestTemperatureSensor(2)
-            newTempCooler = requestTemperatureSensor(1)
-            if tempOutside != newTempOutside or tempCooler != newTempCooler:
+            newTempOutside = requestTemperatureSensor()
+            if tempOutside != newTempOutside:
                 tempOutside = newTempOutside
-                tempCooler = newTempCooler
-                print("Temperatures changed to outside: " + tempOutside + ", cooler: " + tempCooler)
+                print("Temperatures changed to outside: " + tempOutside)
                 anythingChanged = True
             lastTempUpdate = timestamp
-        
-        if (timestamp - lastForecastUpdate) >= FORECAST_UPDATE_INTERVAL:
-            tempForecast = requestTemperatureForecast()
-            if tempForecast:
-                tempForecastLow = str(tempForecast[0])
-                tempForecastHigh = str(tempForecast[1])
-                tempForecastTarget = tempForecast[2]
-                anythingChanged = True
-            lastForecastUpdate = timestamp
-        
         beaconList = blescan.parse_events(sock, 10)
         for beacon in beaconList:
             address, data, _, _, _, rssi = beacon.split(',')
@@ -115,7 +102,7 @@ def mainLoop():
                 anythingChanged = True
         
         if anythingChanged or (timestamp - lastFileUpdate) >= MIN_FILE_UPDATE_INTERVAL:
-            writeOutput(eventsByDate, beaconsPresent, today, tempOutside, tempCooler, tempForecastLow, tempForecastHigh, tempForecastTarget)
+            writeOutput(eventsByDate, beaconsPresent, today, tempOutside)
             lastFileUpdate = timestamp
 
         n.notify("WATCHDOG=1")
@@ -123,28 +110,194 @@ def mainLoop():
 
         
 def requestCalendar():
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:69.0) Gecko/20100101 Firefox/69.0',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language': 'de,en-US;q=0.7,en;q=0.3',
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'DNT': '1',
-        'Referer': 'https://www.muellmax.de/abfallkalender/rsa/res/RsaStart.php',
-        'Upgrade-Insecure-Requests': '1',
-        'TE': 'Trailers',
+    # Start a session
+    session = requests.Session()
+
+    # Headers for session initialization
+    headers_init = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:134.0) Gecko/20100101 Firefox/134.0",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "de,en-US;q=0.7,en;q=0.3",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Referer": "https://www5.bonn.de/WasteManagementBonnOrange/WasteManagementServlet",
+        "DNT": "1",
+        "Connection": "keep-alive",
+        "Upgrade-Insecure-Requests": "1",
+        "Sec-Fetch-Dest": "document",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Site": "same-origin",
+        "Sec-Fetch-User": "?1",
+        "Priority": "u=0, i",
     }
-    data = {
-        'mm_ses': 'NW95K3lZaEpxNDBsM3JYZGNMalRjRzFGUkZPU0hBWWpBVzEzUnZQMlErdlVBUFVqcGtRcEFNM3IvNTJvR1FNaUVINlpYaEYrR29JUm9NblhmM3Z1U2x0ZmpBWjNadzg1Wk5MMXZMVkRmK2hKcHhycEtET0thV0l5c01nWmsvbi9nWTlsRFBkV0ZWU0tpUTVuZTVyWnJBdzFIS2lvVVFEaXQvckVLK2lsTFhLTEJyM1BDQ3dva28vb2p1TDBMcjFhem1pdUF5b2Qwa3A4SlUreW84cjZOeUN2UlMrcUJmdjdsT2h5WWNaVVdpaXhoanROVGhtUG9GMU54WE9aQ09SbkYxVGhPU2UyZi84SStYd2NxcmJSa3lXeFVVMElkN29XUHQvalQ3bGErM009',
-        'xxx': '1',
-        'mm_frm_type': 'termine',
-        'mm_frm_fra_RM4T': 'RM4T',
-        'mm_frm_fra_BIO1T': 'BIO1T',
-        'mm_frm_fra_PAT': 'PAT',
-        'mm_frm_fra_WET': 'WET',
-        'mm_ica_gen': 'iCalendar-Datei laden'
+
+    # Perform session initialization request
+    response_init = session.get(
+        "https://www5.bonn.de/WasteManagementBonnOrange/WasteManagementServlet",
+        headers=headers_init,
+    )
+
+    # Extract JSESSIONID
+    cookies = session.cookies.get_dict()
+    jsessionid = cookies.get("JSESSIONID")
+
+    if not jsessionid:
+        print("Failed to establish session and extract JSESSIONID.")
+        exit()
+
+    #print("Established session with JSESSIONID: {}".format(jsessionid))
+    #print(response_init.text)
+
+    # Headers for the additional POST request (CITYCHANGED)
+    headers_citychanged = {
+        "User-Agent": headers_init["User-Agent"],
+        "Accept": "text/html, */*; q=0.01",
+        "Accept-Language": headers_init["Accept-Language"],
+        "Accept-Encoding": headers_init["Accept-Encoding"],
+        "Content-Type": "text/plain; charset=UTF-8",
+        "X-Requested-With": "XMLHttpRequest",
+        "Origin": "https://www5.bonn.de",
+        "DNT": "1",
+        "Connection": "keep-alive",
+        "Referer": headers_init["Referer"],
+        "Cookie": "JSESSIONID={}".format(jsessionid),
+        "Sec-Fetch-Dest": "empty",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Site": "same-origin",
+        "Priority": "u=0",
     }
-    response = requests.post('https://www.muellmax.de/abfallkalender/rsa/res/RsaStart.php', headers=headers, data=data)
-    return response
+
+    # Form data for the CITYCHANGED request
+    data_citychanged = {
+        "Ajax": "TRUE",
+        "AjaxOnPage": "false",
+        "AjaxDelay": "0",
+        "ApplicationName": "com.athos.nl.mvc.abfterm.CheckAbfuhrTermineParameterBusinessCase",
+        "BuildNumber": "125482",
+        "BuildTime": "2024-11-29 12:44",
+        "Focus": "Ort",
+        "ID": "",
+        "InFrameMode": "FALSE",
+        "IsLastPage": "false",
+        "IsSubmitPage": "false",
+        "Method": "GET",
+        "ModulName": "",
+        "NewTab": "default",
+        "NextPageName": "",
+        "PageName": "Lageadresse",
+        "PageXMLVers": "1.1",
+        "VerticalOffset": "0",
+        "RedirectFunctionNachVorgang": "",
+        "SessionId": jsessionid,  # Use extracted JSESSIONID
+        "ShowMenue": "false",
+        "SubmitAction": "CITYCHANGED",
+        "Hausnummer": "",
+        "Hausnummerzusatz": "",
+        "Ort": os.environ["TRASH_COLLECTION_CITY"],
+        "Strasse": "",
+    }
+
+    # Perform the CITYCHANGED POST request
+    response_citychanged = session.post(
+        "https://www5.bonn.de/WasteManagementBonnOrange/WasteManagementServlet",
+        headers=headers_citychanged,
+        data=data_citychanged,
+    )
+
+    #print("CITYCHANGED request status: {}".format(response_citychanged.status_code))
+    #print(response_citychanged.text)
+
+    # Headers for the first POST request
+    headers_first = headers_init.copy()
+    headers_first.update({
+        "Origin": "https://www5.bonn.de",
+        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+        "Cookie": "JSESSIONID={}".format(jsessionid),
+    })
+
+    # Form data for the first POST request
+    data_first = {
+        "Ajax": "false",
+        "AjaxOnPage": "false",
+        "AjaxDelay": "0",
+        "ApplicationName": "com.athos.nl.mvc.abfterm.CheckAbfuhrTermineParameterBusinessCase",
+        "BuildNumber": "125482",
+        "BuildTime": "2024-11-29 12:44",
+        "Focus": "Hausnummer",
+        "ID": "",
+        "InFrameMode": "FALSE",
+        "IsLastPage": "false",
+        "IsSubmitPage": "false",
+        "Method": "GET",
+        "ModulName": "",
+        "NewTab": "default",
+        "NextPageName": "",
+        "PageName": "Lageadresse",
+        "PageXMLVers": "1.1",
+        "VerticalOffset": "0",
+        "RedirectFunctionNachVorgang": "",
+        "SessionId": jsessionid,  # Use extracted JSESSIONID
+        "ShowMenue": "false",
+        "SubmitAction": "forward",
+        "Ort": os.environ["TRASH_COLLECTION_CITY"],
+        "Strasse": os.environ["TRASH_COLLECTION_STREET"],
+        "Hausnummer": os.environ["TRASH_COLLECTION_NUMBER"],
+        "Hausnummerzusatz": "",
+    }
+
+    # Perform the first POST request
+    response_first = session.post(
+        "https://www5.bonn.de/WasteManagementBonnOrange/WasteManagementServlet",
+        headers=headers_first,
+        data=data_first,
+    )
+
+    #print("First request status: {}".format(response_first.status_code))
+    #print(response_first.text)
+
+    # Headers for the second POST request
+    headers_second = headers_first.copy()
+    headers_second.update({
+        "X-Requested-With": "XMLHttpRequest",
+    })
+
+    # Form data for the second POST request
+    data_second = {
+        "Ajax": "TRUE",
+        "AjaxOnPage": "false",
+        "AjaxDelay": "0",
+        "ApplicationName": "com.athos.kd.bonn.abfuhrtermine.AbfuhrTerminModel",
+        "BuildNumber": "125482",
+        "BuildTime": "2024-11-29 12:44",
+        "Focus": "",
+        "ID": "",
+        "InFrameMode": "FALSE",
+        "IsLastPage": "true",
+        "IsSubmitPage": "false",
+        "Method": "POST",
+        "ModulName": "",
+        "NewTab": "default",
+        "NextPageName": "",
+        "PageName": "Terminliste",
+        "PageXMLVers": "1.1",
+        "VerticalOffset": "0",
+        "RedirectFunctionNachVorgang": "",
+        "SessionId": jsessionid,  # Use extracted JSESSIONID
+        "ShowMenue": "false",
+        "SubmitAction": "filedownload_ICAL",
+    }
+
+    # Perform the second POST request
+    response_second = session.post(
+        "https://www5.bonn.de/WasteManagementBonnOrange/WasteManagementServlet",
+        headers=headers_second,
+        data=data_second,
+    )
+
+    #print("Second request status: {}".format(response_second.status_code))
+    #print(response_second.text)
+
+    return response_second
+
 
 def parseCalendar(calendar):
     newEvents = {}
@@ -238,14 +391,14 @@ def writeTrashcanOutput(event, eventType, beacons, eventsByDate, beaconsPresent,
             ('alert', resolveAlertStatus(beacons, beaconsPresent, eventsByDate, today)), \
             ('nextPickupDays', findNextPickupDays(event, today, eventsByDate)));
         
-def writeOutput(eventsByDate, beaconsPresent, today, tempOutside, tempCooler, tempForecastLow, tempForecastHigh, tempForecastTarget):
+def writeOutput(eventsByDate, beaconsPresent, today, tempOutside):
     doc = Doc()
     with doc.tag('iot', ('timestamp', datetime.now().strftime('%d.%m.%Y %H:%M:%S'))):
-        writeTrashcanOutput(EVENT_RESTMUELL, 1, [BEACON_RESTMUELL], eventsByDate, beaconsPresent, today, doc)
-        writeTrashcanOutput(EVENT_BIO, 2, [BEACON_BIO], eventsByDate, beaconsPresent, today, doc)
-        writeTrashcanOutput(EVENT_PAPIER, 3, [BEACON_PAPIER], eventsByDate, beaconsPresent, today, doc)
-        writeTrashcanOutput(EVENT_RECYCLING, 4, [BEACON_RECYCLING1, BEACON_RECYCLING2], eventsByDate, beaconsPresent, today, doc)
-        doc.stag('temperatures', ('outside', tempOutside), ('cooler', tempCooler), ('forecastLow', tempForecastLow), ('forecastHigh', tempForecastHigh), ('forecastTarget', tempForecastTarget))
+        writeTrashcanOutput(LABEL_RESTMUELL, 1, [BEACON_RESTMUELL], eventsByDate, beaconsPresent, today, doc)
+        writeTrashcanOutput(LABEL_BIO, 2, [BEACON_BIO], eventsByDate, beaconsPresent, today, doc)
+        writeTrashcanOutput(LABEL_PAPIER, 3, [BEACON_PAPIER], eventsByDate, beaconsPresent, today, doc)
+        writeTrashcanOutput(LABEL_RECYCLING, 4, [BEACON_RECYCLING1, BEACON_RECYCLING2], eventsByDate, beaconsPresent, today, doc)
+        doc.stag('temperatures', ('outside', tempOutside))
         
     outFile = open("out/trashcans.xml", "w")
     outFile.write('<?xml version="1.0" encoding="UTF-8"?>\n')
@@ -253,84 +406,9 @@ def writeOutput(eventsByDate, beaconsPresent, today, tempOutside, tempCooler, te
     outFile.write(indent(doc.getvalue()))
     outFile.close()
 	
+def requestTemperatureSensor():
+    return "-"
 	
-def requestTemperatureSensor(sensorNumber):
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:69.0) Gecko/20100101 Firefox/69.0',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language': 'de,en-US;q=0.7,en;q=0.3',
-        'Content-Type': 'application/x-www-form-urlencoded',
-    }
-    data = "<methodCall><methodName>getValue</methodName><params><param><value><string>NEQ0531830:" \
-             + str(sensorNumber) + "</string></value></param><param><value><string>TEMPERATURE</string></value></param></params></methodCall>"
-    try:
-        response = requests.post('http://homematic-raspi:2001/', headers=headers, data=data)
-    except:
-        print("Got exception while querying Homematic CCU")
-        return "-"
-    if response.status_code != 200:
-        print("Got error status code from Homematic CCU: " + str(response.status_code))
-        return "-"
-    else:
-        parsed = re.search(r'<double>(-?\d+\.\d)\d*</double>', response.content, re.IGNORECASE)
-        if parsed:
-            return parsed.group(1)
-        else:
-            print("Got incomprehensible response from Homematic CCU: " + response.content)
-            return "-"
-            
-            
-def requestTemperatureForecast():
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:69.0) Gecko/20100101 Firefox/69.0',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language': 'de,en-US;q=0.7,en;q=0.3',
-        'Content-Type': 'application/x-www-form-urlencoded',
-    }
-    try:
-        response = requests.get('https://www.yr.no/sted/Tyskland/Nordrhein-Westfalen/Troisdorf/forecast_hour_by_hour.xml')
-    except:
-        print("Got exception when querying weather forecast")
-        return None
-    if response.status_code != 200:
-        print("Got error status code from weather service: " + str(response.status_code))
-        return None
-    else:
-        # Dynamically determine the hourly window during which to look at the temperatures
-        # If past 17:00, look at tomorrows' window of 08:00 - 20:00. If before 17:00, look at todays'
-        # of 08:00 - 20:00, but cut off the beginning if we are past 08:00.
-        # This assumes the report being by the hour, starting at the current hour.
-        hourOfDay = datetime.now().hour
-        if hourOfDay < 17:
-            forecastTarget = "heute"
-            windowStart = max(8 - hourOfDay, 0)
-            windowEnd = max((8 - hourOfDay) + 13, 1)
-        else:
-            forecastTarget = "morgen"
-            windowStart = (24 - hourOfDay) + 8
-            windowEnd = windowStart + 13
-                
-        try:
-            xmldoc = minidom.parseString(response.content)
-            hours = xmldoc.getElementsByTagName('time')
-            lowestTemperature = 100
-            highestTemperature = -100
-            for i in range (windowStart, windowEnd):
-                temperature = hours[i].getElementsByTagName('temperature')[0].attributes['value'].value
-                try:
-                    temperature = int(temperature)
-                except ValueError:
-                    temperature = -100
-                if temperature > highestTemperature:
-                    highestTemperature = temperature;
-                if temperature < lowestTemperature:
-                    lowestTemperature = temperature;
-            if highestTemperature == -100:
-                return None
-            return [lowestTemperature, highestTemperature, forecastTarget]
-        except:
-            return None
-            
         
 
 # Open the bluetooth reading and enter a reading loop
