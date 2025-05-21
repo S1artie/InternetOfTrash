@@ -198,11 +198,11 @@
           </div>
           <div class="header">
           	<div class="title">
-                <xsl:text>Temperaturen</xsl:text>
+                <xsl:text></xsl:text>
           	</div>
           </div>
           <div class="content temperatures">
-            <xsl:apply-templates select="temperatures" />
+            <!--<xsl:apply-templates select="temperatures" />-->
           </div>
           <div class="header">
           	<div class="title">
