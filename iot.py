@@ -18,9 +18,9 @@ n = sdnotify.SystemdNotifier()
 BEACON_RESTMUELL = "d4:dd:1f:1f:52:08"
 BEACON_BIO = "ee:0b:87:8d:c0:80"
 BEACON_PAPIER = "f5:8f:c7:3a:7b:5a"
-BEACON_RECYCLING1 = "da:32:c3:8f:39:ce"
-BEACON_RECYCLING2 = "fe:fe:82:66:d5:83"
-BEACONS_ALL = [BEACON_RESTMUELL, BEACON_BIO, BEACON_PAPIER, BEACON_RECYCLING1, BEACON_RECYCLING2]
+BEACON_RECYCLING = "da:32:c3:8f:39:ce"
+#BEACON_RECYCLING2 = "fe:fe:82:66:d5:83"
+BEACONS_ALL = [BEACON_RESTMUELL, BEACON_BIO, BEACON_PAPIER, BEACON_RECYCLING]
 BEACON_TIMEOUT = 120
 
 EVENT_RESTMUELL = "Restabfallbehaelter"
@@ -357,14 +357,12 @@ def convertBeaconToEvent(beacon):
         return EVENT_BIO
     elif beacon == BEACON_PAPIER:
         return EVENT_PAPIER
-    elif beacon == BEACON_RECYCLING1:
-        return EVENT_RECYCLING
-    elif beacon == BEACON_RECYCLING2:
+    elif beacon == BEACON_RECYCLING:
         return EVENT_RECYCLING
         
 def resolveLocationStatus(beacons, beaconsPresent):
-    if all(elem in beaconsPresent for elem in beacons):
-        return "hinter dem Haus"
+    if not all(elem in beaconsPresent for elem in beacons):
+        return "hinter der Garage"
     else:
         return "an der Straße"
         
@@ -372,7 +370,7 @@ def resolveAlertStatus(beacons, beaconsPresent, eventsByDate, today):
     todayString = today.strftime("%Y-%m-%d")
     tomorrowString = (today + timedelta(days=1)).strftime("%Y-%m-%d")
     hourOfDay = datetime.now().hour
-    if all(elem in beaconsPresent for elem in beacons):
+    if not all(elem in beaconsPresent for elem in beacons):
         eventForBeacon = convertBeaconToEvent(beacons[0])
         if todayString in eventsByDate and eventForBeacon in eventsByDate[todayString] and hourOfDay <= 10:
             return "pickupToday"
@@ -397,7 +395,7 @@ def writeOutput(eventsByDate, beaconsPresent, today, tempOutside):
         writeTrashcanOutput(LABEL_RESTMUELL, 1, [BEACON_RESTMUELL], eventsByDate, beaconsPresent, today, doc)
         writeTrashcanOutput(LABEL_BIO, 2, [BEACON_BIO], eventsByDate, beaconsPresent, today, doc)
         writeTrashcanOutput(LABEL_PAPIER, 3, [BEACON_PAPIER], eventsByDate, beaconsPresent, today, doc)
-        writeTrashcanOutput(LABEL_RECYCLING, 4, [BEACON_RECYCLING1, BEACON_RECYCLING2], eventsByDate, beaconsPresent, today, doc)
+        writeTrashcanOutput(LABEL_RECYCLING, 4, [BEACON_RECYCLING], eventsByDate, beaconsPresent, today, doc)
         doc.stag('temperatures', ('outside', tempOutside))
         
     outFile = open("out/trashcans.xml", "w")
