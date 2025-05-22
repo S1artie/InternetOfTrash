@@ -309,6 +309,7 @@ def parseCalendar(calendar):
                 if not date in newEvents:
                     newEvents[date] = []
                 summary = component.get('summary')
+		print(summary)
                 if EVENT_RESTMUELL.decode('utf-8') in summary:
                     newEvents[date].append(EVENT_RESTMUELL)
                 elif EVENT_BIO in summary:
@@ -382,8 +383,8 @@ def resolveAlertStatus(beacons, beaconsPresent, eventsByDate, today):
                 return "pickupTomorrow"
     return ""
         
-def writeTrashcanOutput(event, eventType, beacons, eventsByDate, beaconsPresent, today, doc):
-    doc.stag('trashcan', ('name', event), \
+def writeTrashcanOutput(label, event, eventType, beacons, eventsByDate, beaconsPresent, today, doc):
+    doc.stag('trashcan', ('name', label), \
             ('type', eventType), \
             ('location', resolveLocationStatus(beacons, beaconsPresent)), \
             ('alert', resolveAlertStatus(beacons, beaconsPresent, eventsByDate, today)), \
@@ -392,10 +393,10 @@ def writeTrashcanOutput(event, eventType, beacons, eventsByDate, beaconsPresent,
 def writeOutput(eventsByDate, beaconsPresent, today, tempOutside):
     doc = Doc()
     with doc.tag('iot', ('timestamp', datetime.now().strftime('%d.%m.%Y %H:%M:%S'))):
-        writeTrashcanOutput(LABEL_RESTMUELL, 1, [BEACON_RESTMUELL], eventsByDate, beaconsPresent, today, doc)
-        writeTrashcanOutput(LABEL_BIO, 2, [BEACON_BIO], eventsByDate, beaconsPresent, today, doc)
-        writeTrashcanOutput(LABEL_PAPIER, 3, [BEACON_PAPIER], eventsByDate, beaconsPresent, today, doc)
-        writeTrashcanOutput(LABEL_RECYCLING, 4, [BEACON_RECYCLING], eventsByDate, beaconsPresent, today, doc)
+        writeTrashcanOutput(LABEL_RESTMUELL, EVENT_RESTMUELL, 1, [BEACON_RESTMUELL], eventsByDate, beaconsPresent, today, doc)
+        writeTrashcanOutput(LABEL_BIO, EVENT_BIO, 2, [BEACON_BIO], eventsByDate, beaconsPresent, today, doc)
+        writeTrashcanOutput(LABEL_PAPIER, EVENT_PAPIER, 3, [BEACON_PAPIER], eventsByDate, beaconsPresent, today, doc)
+        writeTrashcanOutput(LABEL_RECYCLING, EVENT_RECYCLING, 4, [BEACON_RECYCLING], eventsByDate, beaconsPresent, today, doc)
         doc.stag('temperatures', ('outside', tempOutside))
         
     outFile = open("out/trashcans.xml", "w")
