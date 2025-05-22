@@ -328,8 +328,8 @@ def requestAndParseCalendar():
     # First, query the trash collection service for an iCal file
     try:
         iCalResponse = requestCalendar()
-    except:
-        print("Got exception when requesting trash collection calendar")
+    except Exception as e:
+        print("Got exception when requesting trash collection calendar: " + str(e))
         return;
     if iCalResponse.status_code != 200:
         print("Got error status code from trash collection calendar server: " + str(iCalResponse.status_code))
