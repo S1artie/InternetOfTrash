@@ -10,18 +10,11 @@
       <style type="text/css">
         html { width: 100%; height: 100%; }
       	body { font-family: Calibri, Arial, sans-serif; font-size: 16pt; color: #fff; margin: 0px; display: block; border-collapse: collapse; width: 100%; height: 100%; }
-      	#outer { margin: 0px; padding-top: 15px; display: block; width: 980px; height: 560px; position: absolute; background-color: #000; }
+      	#outer { margin: 0px; padding-top: 15px; display: block; width: 980px; height: 400px; position: absolute; background-color: #000; }
       	#timestamp { position: absolute; right: 4px; bottom: 4px; font-size: 14px; }
       	.header { padding-bottom: 16px; }
       	.title { font-weight: bold; font-size: 26px; height: 30px; border-bottom: 1px solid #fff; margin: 10px; }
       	.content { margin-left: 20px; margin-right: 20px; }
-      	.temperatures { height: 90px; }
-      	.temperature { display: block; float: left; width: calc(50% - 50px); padding-left: 10px; padding-right: 40px; margin-bottom: 10px; }
-      	.temperatures:last-child { float: none !important; }
-      	.temperature .label { width: 74%; float: left; }
-      	.temperature .value { width: calc(18% - 6px); float: left; text-align: right; padding-right: 6px; }
-      	.temperature .unit { width: 8%; float: right; }
-      	.temperature .monospace { font-family: "DejaVu Sans Mono", Menlo, Consolas, "Liberation Mono", Monaco, "Lucida Console", monospace  }
       	.trashcan { height: 50px; margin-bottom: 20px; padding: 5px; border: 1px dashed #555; }
       	.trashicon { width: 34px; height: 50px; float: left; }
       	.trashicon_1 { background-image: url("data:image/png;base64,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"); }
@@ -195,14 +188,6 @@
             </div> 
             <div id="printtemplates2" class="printtemplates">
             </div>            
-          </div>
-          <div class="header">
-          	<div class="title">
-                <xsl:text></xsl:text>
-          	</div>
-          </div>
-          <div class="content temperatures">
-            <!--<xsl:apply-templates select="temperatures" />-->
           </div>
           <div class="header">
           	<div class="title">
