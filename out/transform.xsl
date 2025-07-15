@@ -10,7 +10,7 @@
       <style type="text/css">
         html { width: 100%; height: 100%; transform: scale(0.846); transform-origin: top left; }
         body { font-family: Calibri, Arial, sans-serif; font-size: 16pt; color: #fff; margin: 0px; display: block; border-collapse: collapse; width: 100%; height: 100%; }
-        #outer { margin: 0px; padding-top: 15px; display: block; width: 868px; height: 429px; position: absolute; background-color: #1c1c1c; }
+        #outer { margin: 0px; padding-top: 15px; display: block; width: 936px; height: 429px; position: absolute; background-color: #1c1c1c; }
         #timestamp { position: absolute; right: 4px; bottom: 4px; font-size: 14px; }
       	.header { padding-bottom: 16px; }
       	.title { font-weight: bold; font-size: 26px; height: 30px; border-bottom: 1px solid #fff; margin: 10px; }
@@ -98,14 +98,14 @@
                 "Chili con carne",
                 "Thai-Curry",
                 "Käsespätzle",
-                "Spätzlepfanne",
+                "Spätzle",
                 "Hähnchenbrust",
                 "Erbsensuppe",
-                "Linseneintopf",
+                "Kokoshähnchen",
                 "Pesto",
-                "Rouladen",
+                "Zitronenreis",
                 "Reis",
-                "Kekse",
+                "Teriyaki",
                 "Wrap-Sauce",
                 "Marinade",
                 "Asiastuff",
