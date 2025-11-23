@@ -165,6 +165,7 @@ def requestCalendar():
         "Sec-Fetch-Site": "same-origin",
         "Priority": "u=0",
     }
+    currentYear = datetime.now().strftime("%Y");
 
     # Form data for the CITYCHANGED request
     data_citychanged = {
@@ -194,6 +195,7 @@ def requestCalendar():
         "Hausnummerzusatz": "",
         "Ort": os.environ["TRASH_COLLECTION_CITY"],
         "Strasse": "",
+        "Zeitraum": "Jahresübersicht " + currentYear,
     }
 
     # Perform the CITYCHANGED POST request
@@ -242,6 +244,7 @@ def requestCalendar():
         "Strasse": os.environ["TRASH_COLLECTION_STREET"],
         "Hausnummer": os.environ["TRASH_COLLECTION_NUMBER"],
         "Hausnummerzusatz": "",
+        "Zeitraum": "Jahresübersicht " + currentYear,
     }
 
     # Perform the first POST request
@@ -309,7 +312,7 @@ def parseCalendar(calendar):
                 if not date in newEvents:
                     newEvents[date] = []
                 summary = component.get('summary')
-		print(summary)
+                print(summary + " at " + date)
                 if EVENT_RESTMUELL.decode('utf-8') in summary:
                     newEvents[date].append(EVENT_RESTMUELL)
                 elif EVENT_BIO in summary:
