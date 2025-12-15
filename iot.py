@@ -134,6 +134,7 @@ def requestCalendar():
     response_init = session.get(
         "https://www5.bonn.de/WasteManagementBonnOrange/WasteManagementServlet",
         headers=headers_init,
+		verify=False,
     )
 
     # Extract JSESSIONID
@@ -203,6 +204,7 @@ def requestCalendar():
         "https://www5.bonn.de/WasteManagementBonnOrange/WasteManagementServlet",
         headers=headers_citychanged,
         data=data_citychanged,
+		verify=False,
     )
 
     #print("CITYCHANGED request status: {}".format(response_citychanged.status_code))
@@ -252,6 +254,7 @@ def requestCalendar():
         "https://www5.bonn.de/WasteManagementBonnOrange/WasteManagementServlet",
         headers=headers_first,
         data=data_first,
+		verify=False,
     )
 
     #print("First request status: {}".format(response_first.status_code))
@@ -294,6 +297,7 @@ def requestCalendar():
         "https://www5.bonn.de/WasteManagementBonnOrange/WasteManagementServlet",
         headers=headers_second,
         data=data_second,
+		verify=False,
     )
 
     #print("Second request status: {}".format(response_second.status_code))
