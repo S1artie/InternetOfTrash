@@ -9,7 +9,7 @@
       <link href='https://fonts.googleapis.com/css?family=Orbitron' rel='stylesheet' type='text/css'></link>
       <style type="text/css">
         html { width: 100%; height: 100%; transform: scale(0.846); transform-origin: top left; }
-        body { font-family: Calibri, Arial, sans-serif; font-size: 16pt; color: #fff; margin: 0px; display: block; border-collapse: collapse; width: 100%; height: 100%; }
+        body { font-family: Calibri, Arial, sans-serif; font-size: 16pt; color: #fff; margin: 0px; display: block; border-collapse: collapse; width: 100%; height: 100%; background-color: #1c1c1c; }
         #outer { margin: 0px; padding-top: 15px; display: block; width: 936px; height: 429px; position: absolute; background-color: #1c1c1c; }
         #timestamp { position: absolute; right: 4px; bottom: 4px; font-size: 14px; }
       	.header { padding-bottom: 16px; }
@@ -71,7 +71,7 @@
         var dots = (ms < 500 ? ":" : "<span style=\"visibility: hidden;\">:</span>");
         var time = fill(h) + dots + fill(m) + dots + fill(s);
         document.getElementById('clock').innerHTML = time;
-        var t = setTimeout(startTime, 500);   
+        var t = window.setTimeout(startTime, 500);   
     }
     function fill(i) {
         if (i < 10) {
