@@ -10,6 +10,7 @@ import re
 from xml.dom import minidom
 import sdnotify
 import os
+import subprocess
 
 import bluetooth._bluetooth as bluez
 
@@ -411,7 +412,8 @@ def writeOutput(eventsByDate, beaconsPresent, today, tempOutside):
     outFile.write('<?xml-stylesheet type="text/xsl" href="transform.xsl" ?>\n')
     outFile.write(indent(doc.getvalue()))
     outFile.close()
-	
+    subprocess.call(["xsltproc", "-o", "out/trashcans.html", "out/transform.xsl", "out/trashcans.xml"])
+
 def requestTemperatureSensor():
     return "-"
 	
